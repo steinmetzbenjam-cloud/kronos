@@ -1,6 +1,6 @@
 /* Kronos — interface : panneau, formulaire, recherche, import/export */
 (function () {
-  var VERSION = "4.1";
+  var VERSION = "4.2";
   var $ = function (id) { return document.getElementById(id); };
 
   var panel = $("panel"), panelBody = $("panel-body");
@@ -1119,7 +1119,19 @@
   $("btn-zoom-out").addEventListener("click", function () { Timeline.zoomBy(1 / 1.6); });
 
   var searchTimer = null;
+  var searchClear = $("search-clear");
+
+  function majCroix() {
+    searchClear.classList.toggle("hidden", searchInput.value === "");
+  }
+  searchClear.addEventListener("click", function () {
+    searchInput.value = "";
+    searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+    searchInput.focus();
+  });
+
   searchInput.addEventListener("input", function () {
+    majCroix();
     var q = searchInput.value.trim();
     if (!Refs.parseQuery(q)) Timeline.setQuery(q);
     clearTimeout(searchTimer);

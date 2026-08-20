@@ -8,15 +8,18 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Kronos">
 <title>Kronos — Frise chronologique</title>
-<link rel="manifest" href="manifest.webmanifest?v=25">
+<link rel="manifest" href="manifest.webmanifest?v=26">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="src/style.css?v=25">
+<link rel="stylesheet" href="src/style.css?v=26">
 </head>
 <body>
 
 <header id="topbar">
   <div class="brand">KRONOS</div>
-  <input id="search" type="search" placeholder="Rechercher…" autocomplete="off">
+  <span class="searchbox">
+    <input id="search" type="search" placeholder="Rechercher…" autocomplete="off">
+    <button type="button" id="search-clear" class="hidden" title="Effacer la recherche" aria-label="Effacer la recherche">✕</button>
+  </span>
   <div class="spacer"></div>
   <button id="btn-zoom-out" class="icon" title="Dézoomer">−</button>
   <button id="btn-zoom-in" class="icon" title="Zoomer">+</button>
@@ -168,14 +171,14 @@
 
 <div id="toast" class="hidden"></div>
 
-<script src="src/seed.js?v=25"></script>
-<script src="src/refs.js?v=25"></script>
-<script src="src/places.js?v=25"></script>
-<script src="src/maps.js?v=25"></script>
-<script src="src/photos.js?v=25"></script>
-<script src="src/store.js?v=25"></script>
-<script src="src/timeline.js?v=25"></script>
-<script src="src/ui.js?v=25"></script>
+<script src="src/seed.js?v=26"></script>
+<script src="src/refs.js?v=26"></script>
+<script src="src/places.js?v=26"></script>
+<script src="src/maps.js?v=26"></script>
+<script src="src/photos.js?v=26"></script>
+<script src="src/store.js?v=26"></script>
+<script src="src/timeline.js?v=26"></script>
+<script src="src/ui.js?v=26"></script>
 <script>
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   navigator.serviceWorker.register('sw.js').catch(function(){});
