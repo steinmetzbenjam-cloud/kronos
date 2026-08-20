@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#12151c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kronos">
+<title>Kronos — Frise chronologique</title>
+<link rel="manifest" href="manifest.webmanifest?v=25">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="src/style.css?v=25">
+</head>
+<body>
+
+<header id="topbar">
+  <div class="brand">KRONOS</div>
+  <input id="search" type="search" placeholder="Rechercher…" autocomplete="off">
+  <div class="spacer"></div>
+  <button id="btn-zoom-out" class="icon" title="Dézoomer">−</button>
+  <button id="btn-zoom-in" class="icon" title="Zoomer">+</button>
+  <button id="btn-fit" class="icon" title="Tout voir">⤢</button>
+  <button id="btn-add" class="primary">+ Événement</button>
+  <button id="btn-menu" class="icon" title="Menu">☰</button>
+</header>
+
+<main id="stage">
+  <canvas id="canvas"></canvas>
+  <div id="zoomlabel"></div>
+</main>
+
+<!-- Panneau latéral : détail / filtres / données -->
+<aside id="panel" class="hidden">
+  <button id="panel-close" class="icon close">✕</button>
+  <div id="panel-body"></div>
+</aside>
+
+<!-- Formulaire d'ajout / édition -->
+<div id="modal" class="hidden">
+  <form id="form">
+    <h2 id="form-title">Nouvel événement</h2>
+    <label>Titre
+      <input name="title" required maxlength="120" placeholder="Ex. Bataille de Marignan">
+    </label>
+    <div class="row">
+      <div class="field">
+        <span class="fieldname">Année de début</span>
+        <input name="start" type="number" required step="1" placeholder="-3000">
+        <div class="datebits">
+          <select name="startMonth"></select>
+          <input name="startDay" type="number" min="1" max="31" step="1" placeholder="jour">
+        </div>
+        <label class="check"><input type="checkbox" name="approxStart"> <span>≈ environ</span></label>
+      </div>
+      <div class="field">
+        <span class="fieldname">Année de fin <span class="hint">(optionnel)</span></span>
+        <input name="end" type="number" step="1" placeholder="—">
+        <div class="datebits">
+          <select name="endMonth"></select>
+          <input name="endDay" type="number" min="1" max="31" step="1" placeholder="jour">
+        </div>
+        <label class="check"><input type="checkbox" name="approxEnd"> <span>≈ environ</span></label>
+      </div>
+    </div>
+    <p class="hint">Années négatives = avant J.-C. (ex. <code>-753</code> = 753 av. J.-C.)</p>
+    <label>Catégorie
+      <span class="inline">
+        <select name="cat"></select>
+        <button type="button" id="form-cats" title="Gérer les catégories">Gérer…</button>
+      </span>
+    </label>
+    <label>Description <span class="hint">(optionnel)</span>
+      <textarea name="desc" rows="4" maxlength="2000" placeholder="Notes, sources, détails…&#10;Colle un lien : https://… ou [texte du lien](https://…)"></textarea>
+    </label>
+    <div class="actions">
+      <button type="button" id="form-delete" class="danger hidden">Supprimer</button>
+      <div class="spacer"></div>
+      <button type="button" id="form-cancel">Annuler</button>
+      <button type="submit" class="primary">Enregistrer</button>
+    </div>
+  </form>
+</div>
+
+<!-- Éditeur de catégories -->
+<div id="catmodal" class="hidden">
+  <div class="sheet">
+    <h2>Catégories</h2>
+    <p class="hint">Renomme, recolore, ajoute ou supprime. Les changements sont enregistrés aussitôt.</p>
+    <div id="catlist"></div>
+    <div class="actions">
+      <button type="button" id="cat-add">+ Nouvelle catégorie</button>
+      <div class="spacer"></div>
+      <button type="button" id="cat-close" class="primary">Terminé</button>
+    </div>
+  </div>
+</div>
+
+<!-- Gestionnaire de cartes -->
+<div id="mapsmodal" class="hidden">
+  <div class="sheet">
+    <h2>Mes cartes</h2>
+    <p class="hint">Charge une image, donne-lui un nom, puis place un point sur les événements concernés.</p>
+    <div id="mapslist"></div>
+    <div class="actions">
+      <button type="button" id="maps-add">+ Ajouter une carte</button>
+      <div class="spacer"></div>
+      <button type="button" id="maps-close" class="primary">Terminé</button>
+    </div>
+  </div>
+</div>
+
+<!-- Description en plein écran -->
+<div id="readmodal" class="hidden">
+  <div class="readhead">
+    <span id="read-title"></span>
+    <div class="spacer"></div>
+    <button type="button" id="read-close" class="primary">Fermer</button>
+  </div>
+  <div id="readbody"></div>
+</div>
+
+<!-- Carte en plein écran (lecture seule) -->
+<div id="viewmodal" class="hidden">
+  <div class="viewhead">
+    <span id="view-title"></span>
+    <span id="view-count"></span>
+    <div class="spacer"></div>
+    <button type="button" id="view-pick" class="primary hidden">Choisir cette carte</button>
+    <button type="button" id="view-reset">Ajuster</button>
+    <button type="button" id="view-close" class="primary">Fermer</button>
+  </div>
+  <div id="viewstage">
+    <div id="viewwrap"><img id="viewimg" alt=""><span id="viewdot" class="hidden"></span></div>
+    <button type="button" id="view-prev" class="viewnav prev hidden" title="Carte précédente">‹</button>
+    <button type="button" id="view-next" class="viewnav next hidden" title="Carte suivante">›</button>
+  </div>
+  <p class="hint" id="view-hint">Pince ou molette pour zoomer · glisse pour déplacer · double-clic pour agrandir</p>
+</div>
+
+<!-- Choix d'une carte, avec vignettes -->
+<div id="choosemap" class="hidden">
+  <div class="sheet">
+    <h2>Choisir une carte</h2>
+    <div id="chooselist" class="choosegrid"></div>
+    <div class="actions">
+      <button type="button" id="choose-manage">Gérer les cartes…</button>
+      <div class="spacer"></div>
+      <button type="button" id="choose-cancel">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- Placement du point sur une carte -->
+<div id="pinmodal" class="hidden">
+  <div class="pinbox">
+    <div class="pinhead">
+      <button type="button" id="pin-map" title="Changer de carte"></button>
+      <div class="spacer"></div>
+      <button type="button" id="pin-clear">Retirer</button>
+      <button type="button" id="pin-cancel">Annuler</button>
+      <button type="button" id="pin-save" class="primary">Enregistrer</button>
+    </div>
+    <div id="pinstage"><img id="pinimg" alt=""><span id="pindot" class="hidden"></span></div>
+    <p class="hint" id="pin-hint">Touche la carte à l'endroit voulu pour y poser le point rouge — c'est facultatif, tu peux enregistrer la carte seule.</p>
+  </div>
+</div>
+
+<div id="toast" class="hidden"></div>
+
+<script src="src/seed.js?v=25"></script>
+<script src="src/refs.js?v=25"></script>
+<script src="src/places.js?v=25"></script>
+<script src="src/maps.js?v=25"></script>
+<script src="src/photos.js?v=25"></script>
+<script src="src/store.js?v=25"></script>
+<script src="src/timeline.js?v=25"></script>
+<script src="src/ui.js?v=25"></script>
+<script>
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  navigator.serviceWorker.register('sw.js').catch(function(){});
+}
+</script>
+</body>
+</html>
