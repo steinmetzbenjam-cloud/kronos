@@ -141,8 +141,8 @@ var Timeline = (function () {
       else points.push(ev);
     });
     eras.sort(function (a, b) { return a.start - b.start; });
-    periods.sort(function (a, b) { return a.start - b.start || b.end - a.end; });
-    points.sort(function (a, b) { return a.start - b.start; });
+    periods.sort(function (a, b) { return (a.start - b.start) || (a.ord - b.ord) || (b.end - a.end); });
+    points.sort(function (a, b) { return (a.start - b.start) || (a.ord - b.ord); });
     var laneEnd = [];
     periods.forEach(function (p) {
       var l = 0;

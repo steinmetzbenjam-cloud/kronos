@@ -62,6 +62,8 @@ var Store = (function () {
       /* dates incertaines : « environ » coché dans le formulaire */
       approxStart: !!(raw.as !== undefined ? raw.as : raw.approxStart),
       approxEnd: end === null ? false : !!(raw.ae !== undefined ? raw.ae : raw.approxEnd),
+      /* rang parmi les événements de la même date, quand il y en a plusieurs */
+      ord: (function () { var v = num(raw.o !== undefined ? raw.o : raw.ord); return v === null ? 0 : v; })(),
       /* carte personnelle : identifiant + position du point, en fraction 0-1 */
       mapId: (raw.mi !== undefined ? raw.mi : raw.mapId) || null,
       mapX: num(raw.mx !== undefined ? raw.mx : raw.mapX),
@@ -206,6 +208,32 @@ var Store = (function () {
       }
       return null;
     },
+    /* Événements exactement à la même position dans le temps, dans leur ordre
+       d'affichage actuel. */
+    sameDay: function (id) {
+      var ref = null, i;
+      for (i = 0; i < state.events.length; i++) if (state.events[i].id === id) ref = state.events[i];
+      if (!ref) return [];
+      return state.events
+        .filter(function (ev) { return ev.start === ref.start; })
+        .sort(function (a, b) { return a.ord - b.ord; });
+    },
+
+    /* Décale un événement d'un cran parmi ceux qui partagent sa date.
+       Renvoie true si le déplacement a eu lieu. */
+    reorder: function (id, delta) {
+      var groupe = this.sameDay(id);
+      if (groupe.length < 2) return false;
+      var i = -1, k;
+      for (k = 0; k < groupe.length; k++) if (groupe[k].id === id) i = k;
+      var j = i + delta;
+      if (i < 0 || j < 0 || j >= groupe.length) return false;
+      var tmp = groupe[i]; groupe[i] = groupe[j]; groupe[j] = tmp;
+      groupe.forEach(function (ev, n) { ev.ord = n; });
+      save();
+      return true;
+    },
+
     /* Rattache une carte et son point à un événement, sans toucher au reste. */
     setMap: function (id, mapId, x, y) {
       for (var i = 0; i < state.events.length; i++) {

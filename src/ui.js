@@ -1,6 +1,6 @@
 /* Kronos — interface : panneau, formulaire, recherche, import/export */
 (function () {
-  var VERSION = "4.2";
+  var VERSION = "4.3";
   var $ = function (id) { return document.getElementById(id); };
 
   var panel = $("panel"), panelBody = $("panel-body");
@@ -87,6 +87,7 @@
       '<p><span class="chip"><span class="dot" style="background:' + cat.color + '"></span>' + esc(cat.label) + '</span></p>' +
       ((ev.approxStart || ev.approxEnd)
         ? '<p class="stat">≈ date approximative</p>' : '') +
+      ordreSection(ev) +
       (ev.desc
         ? '<div class="descbox"><p class="desc">' + renderDesc(ev) + '</p></div>' +
           '<div class="btnrow readmore hidden"><button data-act="read">Tout lire</button></div>'
@@ -131,6 +132,12 @@
       if (act === "choosemap") openChoose(ev.id);
       if (act === "addphoto") pickPhotos(ev.id);
       if (act === "read") openRead(ev);
+      if (act === "monter" || act === "descendre") {
+        if (Store.reorder(ev.id, act === "monter" ? -1 : 1)) {
+          Timeline.rebuild();
+          showDetail(ev.id);
+        }
+      }
       if (act === "view") openView(ev);
       if (act === "unmap") {
         Store.setMap(ev.id, null);
@@ -537,6 +544,25 @@
   });
   $("form-cancel").addEventListener("click", closeForm);
   modal.addEventListener("click", function (e) { if (e.target === modal) closeForm(); });
+
+  /* ---------- ordre entre événements de même date ---------- */
+
+  /* N'apparaît que si d'autres événements partagent exactement la même date. */
+  function ordreSection(ev) {
+    var groupe = Store.sameDay(ev.id);
+    if (groupe.length < 2) return "";
+    var rang = 0;
+    for (var i = 0; i < groupe.length; i++) if (groupe[i].id === ev.id) rang = i + 1;
+    var premier = rang === 1, dernier = rang === groupe.length;
+    return '<div class="ordrebox">' +
+      '<span class="rang">' + rang + '<sup>' + (rang === 1 ? 're' : 'e') + '</sup> sur ' +
+      groupe.length + ' à cette date</span>' +
+      '<button type="button" data-act="monter"' + (premier ? ' disabled' : '') +
+      ' title="Monter">↑</button>' +
+      '<button type="button" data-act="descendre"' + (dernier ? ' disabled' : '') +
+      ' title="Descendre">↓</button>' +
+      '</div>';
+  }
 
   /* ---------- description : hauteur bornée, lecture intégrale ---------- */
 
