@@ -43,6 +43,7 @@ Kronos s'ouvre en plein écran, sans barre de navigateur, et fonctionne hors lig
 | ⌘ + molette (Mac) | Zoomer / dézoomer |
 | Molette seule | Défiler |
 | Clic / tap sur un événement | Ouvrir sa fiche |
+| Glisser une barre sur le côté | Changer sa colonne (voir ci-dessous) |
 | Double-clic sur la frise | Créer un événement à cette date précise |
 | Bouton ⤢ | Revenir à la vue d'ensemble |
 | Flèches, Page ↑↓ | Défiler |
@@ -55,6 +56,23 @@ Les **périodes** (avec une année de fin) s'affichent en barres verticales
 à gauche ; les **dates ponctuelles** sont des points sur l'axe, avec leur
 libellé à droite. Quand on est très dézoomé, seuls les libellés qui tiennent
 sans se chevaucher sont affichés — les autres réapparaissent en zoomant.
+
+### Ranger les barres par importance
+
+Les colonnes des périodes se remplissent toutes seules, de la gauche vers la
+droite, au fur et à mesure que les barres se gênent. Mais l'ordre obtenu n'est
+pas forcément celui qu'on veut : **tire une barre vers la gauche ou vers la
+droite** pour lui choisir sa colonne. Une bande dorée montre où elle va tomber,
+et le numéro de colonne s'affiche pendant le geste.
+
+La colonne 1 est celle qui touche l'axe : c'est là qu'on met ce qui compte le
+plus. Une barre ainsi placée y reste — même après un zoom, un rechargement ou
+une modification de l'événement — et les autres se réorganisent autour d'elle.
+Le glissé de haut en bas continue de faire défiler la frise comme avant : seul
+un geste franchement latéral déplace une barre.
+
+Sa fiche rappelle alors « Colonne *n* (placée à la main) », avec un bouton
+**Replacer automatiquement** pour rendre la barre au calcul de la frise.
 
 Les années **avant J.-C. se saisissent en négatif** : `-753` pour 753 av. J.-C.
 
