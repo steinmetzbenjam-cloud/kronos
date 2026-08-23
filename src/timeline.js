@@ -90,6 +90,42 @@ var Timeline = (function () {
   function yToYear(py) { return view.top + py / view.ppy; }
   function minPPY() { return H > 0 ? H / (MAX_YEAR - MIN_YEAR) : 0.05; }
 
+  /* ---------- mémoire de la vue entre deux sessions ---------- */
+
+  var VIEW_KEY = "kronos.view.v1";
+  var saveTimer = null;
+
+  function saveView() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () {
+      try {
+        var masquees = [];
+        for (var k in hiddenCats) if (hiddenCats[k]) masquees.push(k);
+        localStorage.setItem(VIEW_KEY, JSON.stringify({
+          top: view.top, ppy: view.ppy, hidden: masquees
+        }));
+      } catch (err) { /* stockage plein ou refusé : sans conséquence */ }
+    }, 400);
+  }
+
+  /* Rend true si une vue valide a été restaurée. */
+  function loadView() {
+    var raw = null;
+    try { raw = localStorage.getItem(VIEW_KEY); } catch (err) { return false; }
+    if (!raw) return false;
+    try {
+      var v = JSON.parse(raw);
+      if (typeof v.top !== "number" || typeof v.ppy !== "number") return false;
+      if (!isFinite(v.top) || !isFinite(v.ppy) || v.ppy <= 0) return false;
+      view.top = v.top;
+      view.ppy = v.ppy;
+      hiddenCats = {};
+      (v.hidden || []).forEach(function (c) { hiddenCats[c] = true; });
+      clampView();
+      return true;
+    } catch (err) { return false; }
+  }
+
   function clampView() {
     var mn = minPPY();
     if (view.ppy < mn) view.ppy = mn;
@@ -99,6 +135,7 @@ var Timeline = (function () {
     if (maxTop < MIN_YEAR) maxTop = MIN_YEAR;
     if (view.top < MIN_YEAR) view.top = MIN_YEAR;
     if (view.top > maxTop) view.top = maxTop;
+    saveView();
   }
 
   function zoomAt(py, factor) {
@@ -683,7 +720,9 @@ var Timeline = (function () {
 
     rebuild();
     resize();
-    fitAll();
+    /* On retrouve la frise là où on l'avait laissée ; à défaut, vue d'ensemble. */
+    if (!loadView()) fitAll();
+    requestDraw();
   }
 
   return {
@@ -691,6 +730,11 @@ var Timeline = (function () {
     rebuild: rebuild,
     redraw: requestDraw,
     fitAll: fitAll,
+    forgetView: function () {
+      try { localStorage.removeItem(VIEW_KEY); } catch (err) {}
+      hiddenCats = {};
+      fitAll();
+    },
     focusEvent: focusEvent,
     centerOn: centerOn,
     zoomBy: function (f) { zoomAt(H / 2, f); },
@@ -702,7 +746,7 @@ var Timeline = (function () {
       if (ids) { matchIds = {}; ids.forEach(function (i) { matchIds[i] = true; }); }
       requestDraw();
     },
-    setCatHidden: function (cat, hidden) { hiddenCats[cat] = hidden; requestDraw(); },
+    setCatHidden: function (cat, hidden) { hiddenCats[cat] = hidden; saveView(); requestDraw(); },
     isCatHidden: function (cat) { return !!hiddenCats[cat]; },
     select: function (id) { selectedId = id; requestDraw(); },
     selected: function () { return selectedId; },

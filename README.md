@@ -64,6 +64,21 @@ zoome : des siècles aux mois, puis aux jours.
 
 ---
 
+## La frise se retrouve où tu l'as laissée
+
+Kronos mémorise **le zoom, la position et les catégories masquées**. Tu fermes
+l'application au milieu de la semaine du 14 nisan, à l'échelle du jour : elle
+rouvre exactement là, avec les mêmes filtres.
+
+C'est propre à chaque appareil — ton iPad garde sa vue, ton Mac la sienne — et
+séparé de tes données : rien de tout cela ne part dans le fichier d'export.
+
+Deux façons de revenir en arrière : le bouton **⤢** de la barre du haut ramène
+la vue d'ensemble, et **Menu ☰ → Tout réafficher** rétablit en plus toutes les
+catégories masquées.
+
+---
+
 ## Plusieurs événements le même jour
 
 Quand plusieurs événements partagent exactement la même date, leur fiche

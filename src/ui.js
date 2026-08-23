@@ -1,6 +1,6 @@
 /* Kronos — interface : panneau, formulaire, recherche, import/export */
 (function () {
-  var VERSION = "4.3";
+  var VERSION = "4.4";
   var $ = function (id) { return document.getElementById(id); };
 
   var panel = $("panel"), panelBody = $("panel-body");
@@ -212,7 +212,8 @@
     });
     html += '</div>';
     html += '<p class="stat" style="margin-top:8px">Touche une catégorie pour la masquer sur la frise.</p>' +
-            '<div class="btnrow"><button data-act="cats">Gérer les catégories…</button></div>';
+            '<div class="btnrow"><button data-act="cats">Gérer les catégories…</button>' +
+            '<button data-act="revoir">Tout réafficher</button></div>';
 
     html += '<h3>Cartes</h3>' +
       '<div class="btnrow"><button data-act="maps">Mes cartes…</button></div>' +
@@ -268,6 +269,7 @@
       var act = e.target.getAttribute("data-act");
       if (act === "cats") openCats();
       if (act === "maps") openMaps();
+      if (act === "revoir") { Timeline.forgetView(); showMenu(); say("Affichage réinitialisé"); }
       if (act === "export") doExport();
       if (act === "copy") doCopy();
       if (act === "import") doImport();
