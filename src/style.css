@@ -409,16 +409,16 @@ code{background:var(--bg);padding:1px 5px;border-radius:5px;font-size:12px}
 .mapcard .loupe:active{background:var(--accent);color:#1b1608}
 #view-pick{white-space:nowrap}
 
-/* ---------- Ordre entre événements de même date ---------- */
-.ordrebox{
-  display:flex;align-items:center;gap:6px;margin:10px 0 2px;
-  padding:6px 8px;border:1px solid var(--line);border-radius:var(--radius);
-  background:var(--bg);
+/* ---------- Ligne sous la date : « environ » et position dans la journée ---------- */
+.datemeta{display:flex;align-items:center;gap:8px;margin:-6px 0 10px;min-height:28px}
+.datemeta .stat{flex:1}
+.datemeta .ordre{margin-left:auto;display:flex;gap:5px;flex:0 0 auto}
+.datemeta .ordre button{
+  min-height:0;width:30px;height:26px;padding:0;
+  font-size:14px;line-height:24px;text-align:center;
 }
-.ordrebox .rang{flex:1;font-size:12.5px;color:var(--txt-dim)}
-.ordrebox .rang sup{font-size:9px}
-.ordrebox button{
-  flex:0 0 auto;min-height:0;width:32px;height:28px;padding:0;
-  font-size:15px;line-height:26px;text-align:center;
-}
-.ordrebox button[disabled]{opacity:.3;pointer-events:none}
+.datemeta .ordre button[disabled]{opacity:.3;pointer-events:none}
+
+/* la pastille de catégorie de la fiche bascule l'affichage sur la frise */
+#panel .chip[data-act="togglecat"]{cursor:pointer}
+#panel .chip[data-act="togglecat"]:active{border-color:var(--accent)}

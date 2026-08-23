@@ -1,6 +1,6 @@
 /* Kronos — interface : panneau, formulaire, recherche, import/export */
 (function () {
-  var VERSION = "4.6";
+  var VERSION = "4.7";
   var $ = function (id) { return document.getElementById(id); };
 
   var panel = $("panel"), panelBody = $("panel-body");
@@ -84,10 +84,13 @@
     openPanel(
       '<h2>' + esc(ev.title) + '</h2>' +
       '<p class="date">' + esc(Timeline.fmtRange(ev)) + '</p>' +
-      '<p><span class="chip"><span class="dot" style="background:' + cat.color + '"></span>' + esc(cat.label) + '</span></p>' +
-      ((ev.approxStart || ev.approxEnd)
-        ? '<p class="stat">≈ date approximative</p>' : '') +
-      ordreSection(ev) +
+      ligneDate(ev) +
+      '<p><span class="chip' + (Timeline.isCatHidden(ev.cat) ? ' off' : '') +
+        '" data-act="togglecat" title="' +
+        (Timeline.isCatHidden(ev.cat) ? 'Réafficher cette catégorie sur la frise'
+                                      : 'Masquer cette catégorie sur la frise') +
+        '"><span class="dot" style="background:' + cat.color + '"></span>' +
+        esc(cat.label) + '</span></p>' +
       (ev.desc
         ? '<div class="descbox"><p class="desc">' + renderDesc(ev) + '</p></div>' +
           '<div class="btnrow readmore hidden"><button data-act="read">Tout lire</button></div>'
@@ -132,6 +135,13 @@
       if (act === "choosemap") openChoose(ev.id);
       if (act === "addphoto") pickPhotos(ev.id);
       if (act === "read") openRead(ev);
+      if (act === "togglecat") {
+        var masquee = !Timeline.isCatHidden(ev.cat);
+        Timeline.setCatHidden(ev.cat, masquee);
+        showDetail(ev.id);
+        say(masquee ? 'Catégorie « ' + Store.category(ev.cat).label + ' » masquée'
+                    : 'Catégorie « ' + Store.category(ev.cat).label + ' » réaffichée');
+      }
       if (act === "monter" || act === "descendre") {
         if (Store.reorder(ev.id, act === "monter" ? -1 : 1)) {
           Timeline.rebuild();
@@ -549,21 +559,26 @@
 
   /* ---------- ordre entre événements de même date ---------- */
 
-  /* N'apparaît que si d'autres événements partagent exactement la même date. */
-  function ordreSection(ev) {
+  /* Flèches de position, seulement si d'autres événements partagent la date. */
+  function ordreFleches(ev) {
     var groupe = Store.sameDay(ev.id);
     if (groupe.length < 2) return "";
     var rang = 0;
     for (var i = 0; i < groupe.length; i++) if (groupe[i].id === ev.id) rang = i + 1;
-    var premier = rang === 1, dernier = rang === groupe.length;
-    return '<div class="ordrebox">' +
-      '<span class="rang">' + rang + '<sup>' + (rang === 1 ? 're' : 'e') + '</sup> sur ' +
-      groupe.length + ' à cette date</span>' +
-      '<button type="button" data-act="monter"' + (premier ? ' disabled' : '') +
-      ' title="Monter">↑</button>' +
-      '<button type="button" data-act="descendre"' + (dernier ? ' disabled' : '') +
-      ' title="Descendre">↓</button>' +
-      '</div>';
+    return '<span class="ordre">' +
+      '<button type="button" data-act="monter"' + (rang === 1 ? ' disabled' : '') +
+      ' title="Placer plus haut dans la journée">↑</button>' +
+      '<button type="button" data-act="descendre"' + (rang === groupe.length ? ' disabled' : '') +
+      ' title="Placer plus bas dans la journée">↓</button></span>';
+  }
+
+  /* Ligne compacte sous la date : mention « environ » et flèches de position. */
+  function ligneDate(ev) {
+    var mention = (ev.approxStart || ev.approxEnd)
+      ? '<span class="stat">≈ date approximative</span>' : '<span></span>';
+    var fleches = ordreFleches(ev);
+    if (mention === '<span></span>' && !fleches) return "";
+    return '<div class="datemeta">' + mention + fleches + '</div>';
   }
 
   /* ---------- description : hauteur bornée, lecture intégrale ---------- */

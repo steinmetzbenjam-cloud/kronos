@@ -81,17 +81,21 @@ catégories masquées.
 
 ## Plusieurs événements le même jour
 
-Quand plusieurs événements partagent exactement la même date, leur fiche
-affiche leur rang — « 9ᵉ sur 13 à cette date » — et deux flèches **↑ ↓**
-pour les déplacer les uns par rapport aux autres. L'ordre choisi est
-enregistré et gouverne l'affichage sur la frise.
+Quand plusieurs événements partagent exactement la même date, deux flèches
+**↑ ↓** apparaissent sous la date de leur fiche, à droite, pour les déplacer
+les uns par rapport aux autres. L'ordre choisi est enregistré et gouverne
+l'affichage sur la frise.
 
 C'est fait pour les journées denses : le 14 nisan 33 compte à lui seul
 treize événements, du repas pascal à la mise au tombeau, et leur
 enchaînement est ce qu'on veut lire.
 
-Le bloc n'apparaît pas quand l'événement est seul à sa date, et les flèches
-se grisent au premier et au dernier rang.
+Les flèches n'apparaissent pas quand l'événement est seul à sa date, et se
+grisent au premier et au dernier rang.
+
+**La pastille de catégorie de la fiche est cliquable** : un appui masque cette
+catégorie sur toute la frise, un autre la rétablit. La pastille s'éteint pour
+montrer l'état, et le choix est mémorisé d'une session à l'autre.
 
 ---
 
