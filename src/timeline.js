@@ -298,7 +298,7 @@ var Timeline = (function () {
         var md = fromDoy(doy);
         var pyd = yearToY(pd);
         band(pyd, yearToY(pd + 1 / 365), doy % 2 === 0);
-        rule(pyd, md[1] === 1 ? "#414d61" : "#2a3242");
+        rule(pyd, "#1d222c");
         label(md[1] + " " + MOIS_AB[md[0] - 1] + (md[0] === 1 && md[1] === 1 ? " " + fmtYearShort(yy) : ""), pyd, false);
       }
     } else if (monthPx >= 30) {
@@ -310,7 +310,7 @@ var Timeline = (function () {
           var pym = yearToY(pm);
           if (pym < -60 || pym > H + 60) continue;
           band(pym, yearToY(yv + (CUM[mo - 1] + LONG[mo - 1]) / 365), mo % 2 === 0);
-          rule(pym, mo === 1 ? "#4a5670" : "#2f3a4c");
+          rule(pym, mo === 1 ? "#2f3644" : "#1d222c");
           label(MOIS_AB[mo - 1] + (mo === 1 ? " " + fmtYearShort(yv) : ""), pym, mo !== 1);
         }
       }
@@ -322,14 +322,12 @@ var Timeline = (function () {
         var py = yearToY(y), py2 = yearToY(y + step);
         var idx = Math.round(y / step);
         band(py, py2, (((idx % 2) + 2) % 2) === 0);
-        /* un cran sur cinq est plus marqué : on repère la décennie, le siècle
-           ou le millénaire selon l'échelle */
-        rule(py, (((idx % 5) + 5) % 5) === 0 ? "#4a5670" : "#2f3a4c");
+        rule(py, "#1d222c");
         label(fmtYearShort(y), py, false);
       }
       if (step * view.ppy >= 220) {
         var sub = step / 5;
-        ctx.strokeStyle = "rgba(64,76,96,0.55)";
+        ctx.strokeStyle = "rgba(38,44,56,0.5)";
         for (var y2 = first; y2 < bottomYear + step; y2 += sub) {
           if (Math.abs(y2 / step - Math.round(y2 / step)) < 1e-9) continue;
           var sy = Math.round(yearToY(y2)) + 0.5;
