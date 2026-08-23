@@ -171,14 +171,31 @@ var Store = (function () {
     return state;
   }
 
+  /* Un échec d'enregistrement — stockage plein — était jusqu'ici silencieux :
+     l'utilisateur perdait son texte sans le savoir. On le signale désormais. */
+  var onSaveError = null;
+
   function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); return true; }
-    catch (err) { return false; }
+    try {
+      localStorage.setItem(KEY, JSON.stringify(state));
+      return true;
+    } catch (err) {
+      if (onSaveError) onSaveError(err);
+      return false;
+    }
   }
 
   return {
     load: load,
     save: save,
+    onSaveError: function (fn) { onSaveError = fn; },
+
+    /* Poids des données et part de l'espace disponible (environ 5 Mo). */
+    usage: function () {
+      var n = 0;
+      try { n = (localStorage.getItem(KEY) || "").length; } catch (err) { n = 0; }
+      return { bytes: n, percent: Math.min(100, n / (5 * 1024 * 1024) * 100) };
+    },
     all: function () { return state.events; },
     categories: function () { return state.categories; },
     category: function (id) {

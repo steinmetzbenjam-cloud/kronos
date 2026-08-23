@@ -8,9 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Kronos">
 <title>Kronos — Frise chronologique</title>
-<link rel="manifest" href="manifest.webmanifest?v=31">
+<link rel="manifest" href="manifest.webmanifest?v=32">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="src/style.css?v=31">
+<link rel="stylesheet" href="src/style.css?v=32">
 </head>
 <body>
 
@@ -44,7 +44,7 @@
   <form id="form">
     <h2 id="form-title">Nouvel événement</h2>
     <label>Titre
-      <input name="title" required maxlength="120" placeholder="Ex. Bataille de Marignan">
+      <input name="title" required maxlength="200" placeholder="Ex. Bataille de Marignan">
     </label>
     <div class="row">
       <div class="field">
@@ -74,7 +74,8 @@
       </span>
     </label>
     <label>Description <span class="hint">(optionnel)</span>
-      <textarea name="desc" rows="4" maxlength="2000" placeholder="Notes, sources, détails…&#10;Colle un lien : https://… ou [texte du lien](https://…)"></textarea>
+      <textarea name="desc" rows="10" maxlength="50000" placeholder="Notes, sources, détails…&#10;Colle un lien : https://… ou [texte du lien](https://…)"></textarea>
+      <span class="compteur hidden" id="desc-compteur"></span>
     </label>
     <div class="actions">
       <button type="button" id="form-delete" class="danger hidden">Supprimer</button>
@@ -171,14 +172,14 @@
 
 <div id="toast" class="hidden"></div>
 
-<script src="src/seed.js?v=31"></script>
-<script src="src/refs.js?v=31"></script>
-<script src="src/places.js?v=31"></script>
-<script src="src/maps.js?v=31"></script>
-<script src="src/photos.js?v=31"></script>
-<script src="src/store.js?v=31"></script>
-<script src="src/timeline.js?v=31"></script>
-<script src="src/ui.js?v=31"></script>
+<script src="src/seed.js?v=32"></script>
+<script src="src/refs.js?v=32"></script>
+<script src="src/places.js?v=32"></script>
+<script src="src/maps.js?v=32"></script>
+<script src="src/photos.js?v=32"></script>
+<script src="src/store.js?v=32"></script>
+<script src="src/timeline.js?v=32"></script>
+<script src="src/ui.js?v=32"></script>
 <script>
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   navigator.serviceWorker.register('sw.js').catch(function(){});

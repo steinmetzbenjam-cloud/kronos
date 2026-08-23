@@ -1,6 +1,6 @@
 /* Kronos — interface : panneau, formulaire, recherche, import/export */
 (function () {
-  var VERSION = "4.7";
+  var VERSION = "4.8";
   var $ = function (id) { return document.getElementById(id); };
 
   var panel = $("panel"), panelBody = $("panel-body");
@@ -234,7 +234,12 @@
        ' attachée' + (Photos.total() > 1 ? 's' : '') + ' aux événements · ' +
        poids(Photos.bytes()) + '.' : '') + '</p>';
 
-    html += '<h3>Mes données</h3><div class="btnrow">' +
+    var u = Store.usage();
+    html += '<h3>Mes données</h3>' +
+      '<p class="stat' + (u.percent > 70 ? ' alerte' : '') + '">Textes et dates : ' +
+      poids(u.bytes) + ' — ' + u.percent.toFixed(0) + ' % de l\'espace du navigateur' +
+      (u.percent > 70 ? '. Pense à exporter et à alléger.' : '.') + '</p>';
+    html += '<div class="btnrow">' +
       '<button data-act="export">Exporter (fichier)</button>' +
       '<button data-act="copy">Copier (sans cartes)</button>' +
       '<button data-act="import">Importer</button>' +
@@ -497,6 +502,21 @@
   $("form-cats").addEventListener("click", openCats);
   catModal.addEventListener("click", function (e) { if (e.target === catModal) closeCats(); });
 
+  var MAX_DESC = 50000;
+  var compteur = $("desc-compteur");
+
+  function majCompteur() {
+    var n = form.elements.desc.value.length;
+    var proche = n > MAX_DESC * 0.8;
+    compteur.classList.toggle("hidden", !proche);
+    if (proche) {
+      compteur.textContent = n.toLocaleString("fr-FR") + " / " +
+                             MAX_DESC.toLocaleString("fr-FR") + " caractères";
+      compteur.classList.toggle("plein", n >= MAX_DESC);
+    }
+  }
+  form.elements.desc.addEventListener("input", majCompteur);
+
   function openForm(ev, presetYear) {
     fillCategories();
     fillMonths();
@@ -513,6 +533,7 @@
     form.elements.approxEnd.checked = ev ? !!ev.approxEnd : false;
     form.elements.cat.value = ev ? ev.cat : "perso";
     form.elements.desc.value = ev ? ev.desc : "";
+    majCompteur();
     formDelete.classList.toggle("hidden", !ev);
     modal.classList.remove("hidden");
     setTimeout(function () { form.elements.title.focus(); }, 40);
@@ -1205,6 +1226,13 @@
   });
 
   /* ---------- démarrage ---------- */
+
+  Store.onSaveError(function () {
+    alert("Enregistrement impossible : l'espace de stockage du navigateur est plein.\n\n" +
+          "Ta dernière modification n'a PAS été conservée.\n\n" +
+          "Exporte tes données sans attendre (Menu ☰ → Exporter), puis allège " +
+          "la frise — les images d'événements et les cartes sont ce qui pèse le plus.");
+  });
 
   Store.load();
   Maps.init();

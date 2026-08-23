@@ -196,6 +196,16 @@ elle défile sur place, un dégradé signale qu'il reste du texte, et un bouton
 confortable, liens et références toujours actifs. Le bouton n'apparaît que si
 le texte déborde réellement.
 
+**Taille des notes.** La description accepte **50 000 caractères** par
+événement — une vingtaine de pages —, le titre 200. Le champ s'ouvre plus haut
+et s'étire à la souris. Un compteur n'apparaît qu'au-delà de 40 000 caractères.
+
+Le menu ☰ indique le poids de tes textes et la part occupée de l'espace du
+navigateur (environ 5 Mo pour les textes et les dates ; les images et les
+cartes, elles, sont ailleurs et ne comptent pas là-dedans). Si un
+enregistrement venait à échouer faute de place, Kronos te le dit au lieu de
+perdre ta saisie en silence.
+
 **Liens.** Toute adresse écrite dans la description devient cliquable. Deux
 écritures possibles :
 
