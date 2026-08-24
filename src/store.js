@@ -64,6 +64,12 @@ var Store = (function () {
       approxEnd: end === null ? false : !!(raw.ae !== undefined ? raw.ae : raw.approxEnd),
       /* rang parmi les événements de la même date, quand il y en a plusieurs */
       ord: (function () { var v = num(raw.o !== undefined ? raw.o : raw.ord); return v === null ? 0 : v; })(),
+      /* colonne choisie à la main pour une barre de période (0 = tout à
+         gauche, contre l'axe). null : la frise la place automatiquement. */
+      lane: (function () {
+        var v = num(raw.l !== undefined ? raw.l : raw.lane);
+        return v === null ? null : Math.max(0, Math.round(v));
+      })(),
       /* carte personnelle : identifiant + position du point, en fraction 0-1 */
       mapId: (raw.mi !== undefined ? raw.mi : raw.mapId) || null,
       mapX: num(raw.mx !== undefined ? raw.mx : raw.mapX),
@@ -249,6 +255,20 @@ var Store = (function () {
       groupe.forEach(function (ev, n) { ev.ord = n; });
       save();
       return true;
+    },
+
+    /* Fixe la colonne d'une barre de période, ou la rend à nouveau
+       automatique avec `lane` à null. */
+    setLane: function (id, lane) {
+      for (var i = 0; i < state.events.length; i++) {
+        if (state.events[i].id === id) {
+          state.events[i].lane = (lane === null || lane === undefined)
+            ? null : Math.max(0, Math.round(lane));
+          save();
+          return state.events[i];
+        }
+      }
+      return null;
     },
 
     /* Rattache une carte et son point à un événement, sans toucher au reste. */

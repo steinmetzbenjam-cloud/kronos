@@ -2,7 +2,7 @@
    Stratégie « réseau d'abord » : tant qu'on a du réseau, on sert toujours la
    dernière version du code. Le cache ne prend le relais que hors ligne.
    Une stratégie « cache d'abord » servait indéfiniment un code périmé. */
-var CACHE = "kronos-v34";
+var CACHE = "kronos-v35";
 var FILES = [
   "./", "./index.html", "./manifest.webmanifest",
   "./src/style.css", "./src/seed.js", "./src/refs.js", "./src/places.js",

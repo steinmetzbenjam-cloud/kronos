@@ -5,6 +5,7 @@ var Timeline = (function () {
   var MAX_PPY  = 20000;         // pixels par année : jusqu'au jour près
   var FONT = '-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif';
   var STEPS = [5000, 2000, 1000, 500, 200, 100, 50, 25, 10, 5, 2, 1];
+  var MAX_LANES = 40;           // garde-fou : au-delà les barres seraient invisibles
 
   var canvas, ctx, stage, zoomLabel;
   var dpr = 1, W = 0, H = 0;
@@ -13,7 +14,7 @@ var Timeline = (function () {
   var periods = [], points = [], eras = [], laneCount = 1;
   var selectedId = null, hiddenCats = {}, query = "", matchIds = null;
   var drawQueued = false, lastSpan = -1, zoomTimer = null;
-  var handlers = { select: null, addAt: null };
+  var handlers = { select: null, addAt: null, laneChange: null };
 
   /* ---------------- utilitaires ---------------- */
 
@@ -190,7 +191,9 @@ var Timeline = (function () {
     };
   }
 
-  /* Voies des périodes : calculées sur les années (stables au zoom). */
+  /* Voies des périodes : calculées sur les années (stables au zoom).
+     Une barre dont la colonne a été fixée à la main (ev.lane) y reste ;
+     les autres se glissent dans le premier espace libre à sa gauche. */
   function rebuild() {
     var all = Store.all();
     periods = []; points = []; eras = [];
@@ -202,14 +205,36 @@ var Timeline = (function () {
     eras.sort(function (a, b) { return a.start - b.start; });
     periods.sort(function (a, b) { return (a.start - b.start) || (a.ord - b.ord) || (b.end - a.end); });
     points.sort(function (a, b) { return (a.start - b.start) || (a.ord - b.ord); });
-    var laneEnd = [];
+
+    var pris = [];   /* pris[l] : intervalles déjà occupés dans la colonne l */
+    function libre(l, p) {
+      var arr = pris[l];
+      if (!arr) return true;
+      for (var i = 0; i < arr.length; i++)
+        if (p.start < arr[i].e && p.end > arr[i].s) return false;
+      return true;
+    }
+    function occuper(l, p) {
+      if (!pris[l]) pris[l] = [];
+      pris[l].push({ s: p.start, e: p.end });
+    }
+
+    /* Les colonnes choisies à la main sont réservées en premier. */
+    var libres = [];
     periods.forEach(function (p) {
-      var l = 0;
-      while (l < laneEnd.length && laneEnd[l] > p.start) l++;
-      laneEnd[l] = p.end;
-      p._lane = l;
+      if (p.lane === null || p.lane === undefined) { libres.push(p); return; }
+      p._lane = Math.max(0, Math.min(p.lane, MAX_LANES - 1));
+      occuper(p._lane, p);
     });
-    laneCount = Math.max(laneEnd.length, 1);
+    libres.forEach(function (p) {
+      var l = 0;
+      while (l < MAX_LANES - 1 && !libre(l, p)) l++;
+      p._lane = l;
+      occuper(l, p);
+    });
+
+    laneCount = 1;
+    periods.forEach(function (p) { if (p._lane + 1 > laneCount) laneCount = p._lane + 1; });
     requestDraw();
   }
 
@@ -421,8 +446,32 @@ var Timeline = (function () {
         ctx.restore();
       }
       ctx.globalAlpha = 1;
-      hits.push({ id: p.id, x: x - 5, y: Math.max(y1, 0), w: L.laneW + 10, h: Math.max(Math.min(y2, H) - Math.max(y1, 0), 12) });
+      hits.push({ id: p.id, bar: true, x: x - 5, y: Math.max(y1, 0), w: L.laneW + 10, h: Math.max(Math.min(y2, H) - Math.max(y1, 0), 12) });
     });
+
+    /* --- colonne visée pendant un déplacement latéral --- */
+    if (laneDrag && laneDrag.armed) {
+      var gx = L.laneX + laneDrag.lane * L.pitch;
+      ctx.fillStyle = "rgba(224,178,90,0.10)";
+      ctx.fillRect(gx - 2, 0, L.laneW + 4, H);
+      ctx.strokeStyle = "rgba(224,178,90,0.55)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(Math.round(gx - 2) + 0.5, 0.5, L.laneW + 4, H - 1);
+      var badge = "colonne " + (laneDrag.lane + 1);
+      var by = Math.max(Math.min(yearToY(laneDrag.ev.start), H - 26), 16);
+      ctx.font = "600 11px " + FONT;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      var bw = ctx.measureText(badge).width + 14;
+      var bx = Math.min(gx + L.laneW + 8, W - bw - 6);
+      ctx.fillStyle = "rgba(10,12,16,0.9)";
+      rrect(bx, by - 10, bw, 20, 10);
+      ctx.fill();
+      ctx.fillStyle = "#e0b25a";
+      ctx.fillText(badge, bx + 7, by);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+    }
 
     /* --- événements ponctuels, répartis en colonnes --- */
     /* Une seule colonne ne peut pas accueillir tous les libellés quand ils
@@ -581,12 +630,80 @@ var Timeline = (function () {
 
   /* ---------------- interactions ---------------- */
 
-  function hitTest(x, y) {
+  function hitAt(x, y) {
     for (var i = hits.length - 1; i >= 0; i--) {
       var h = hits[i];
-      if (x >= h.x && x <= h.x + h.w && y >= h.y && y <= h.y + h.h) return h.id;
+      if (x >= h.x && x <= h.x + h.w && y >= h.y && y <= h.y + h.h) return h;
     }
     return null;
+  }
+  function hitTest(x, y) {
+    var h = hitAt(x, y);
+    return h ? h.id : null;
+  }
+  /* Pour le déplacement latéral on ne cherche que les barres : les libellés
+     des événements ponctuels débordent parfois sur la dernière colonne. */
+  function barAt(x, y) {
+    for (var i = hits.length - 1; i >= 0; i--) {
+      var h = hits[i];
+      if (!h.bar) continue;
+      if (x >= h.x && x <= h.x + h.w && y >= h.y && y <= h.y + h.h) return h;
+    }
+    return null;
+  }
+  function periodById(id) {
+    for (var i = 0; i < periods.length; i++) if (periods[i].id === id) return periods[i];
+    return null;
+  }
+
+  /* ---------- déplacement latéral d'une barre de période ----------
+     Glisser une barre vers la droite ou la gauche change sa colonne :
+     à gauche, contre l'axe, les périodes qui comptent le plus. */
+
+  var laneDrag = null;
+
+  function laneAtX(x, L) {
+    return Math.round((x - L.laneX - L.laneW / 2) / L.pitch);
+  }
+
+  function armLaneDrag() {
+    laneDrag.armed = true;
+    laneDrag.max = Math.min(laneCount, MAX_LANES - 1);
+    if (laneDrag.from > laneDrag.max) laneDrag.max = laneDrag.from;
+    selectedId = laneDrag.ev.id;
+    canvas.classList.add("lane-dragging");
+  }
+
+  function moveLaneDrag(x) {
+    var L = layout();
+    var l = laneAtX(x + laneDrag.grab, L);
+    if (l < 0) l = 0;
+    if (l > laneDrag.max) l = laneDrag.max;
+    if (l === laneDrag.lane) return;
+    laneDrag.lane = l;
+    laneDrag.ev._lane = l;
+    requestDraw();
+  }
+
+  /* Remet la barre où elle était : pincement, annulation du geste. */
+  function cancelLaneDrag() {
+    if (!laneDrag) return;
+    laneDrag.ev._lane = laneDrag.from;
+    laneDrag = null;
+    canvas.classList.remove("lane-dragging");
+    requestDraw();
+  }
+
+  function dropLaneDrag() {
+    var d = laneDrag;
+    laneDrag = null;
+    canvas.classList.remove("lane-dragging");
+    if (!d || !d.armed) return false;
+    if (d.lane === d.from) { requestDraw(); return true; }   /* revenu à sa place */
+    Store.setLane(d.ev.id, d.lane);
+    rebuild();
+    if (handlers.laneChange) handlers.laneChange(d.ev.id, d.lane);
+    return true;
   }
 
   var pointers = {}, pcount = 0;
@@ -626,7 +743,20 @@ var Timeline = (function () {
     if (pcount === 1) {
       dragLast = p.y; dragMoved = 0; lastT = e.timeStamp || 0;
       canvas.classList.add("dragging");
+      /* Une barre sous le doigt : le geste pourra devenir un changement de
+         colonne s'il part sur le côté plutôt que vers le haut ou le bas. */
+      var h = barAt(p.x, p.y);
+      var per = h ? periodById(h.id) : null;
+      if (per) {
+        var L = layout();
+        laneDrag = {
+          ev: per, from: per._lane, lane: per._lane,
+          x0: p.x, y0: p.y, armed: false, max: laneCount,
+          grab: (L.laneX + per._lane * L.pitch + L.laneW / 2) - p.x
+        };
+      }
     } else if (pcount === 2) {
+      cancelLaneDrag();
       var ks = Object.keys(pointers);
       var a = pointers[ks[0]], b = pointers[ks[1]];
       pinchDist = Math.abs(a.y - b.y) + Math.abs(a.x - b.x) || 1;
@@ -653,6 +783,19 @@ var Timeline = (function () {
       return;
     }
 
+    if (laneDrag) {
+      var ldx = p.x - laneDrag.x0, ldy = p.y - laneDrag.y0;
+      if (!laneDrag.armed) {
+        if (Math.abs(ldx) > 8 && Math.abs(ldx) > Math.abs(ldy)) armLaneDrag();
+        else if (Math.abs(ldy) > 6) laneDrag = null;   /* c'est un défilement */
+      }
+      if (laneDrag) {
+        dragMoved += 99;    /* ce n'est plus une simple tape */
+        moveLaneDrag(p.x);
+        return;             /* la frise ne défile pas pendant ce geste */
+      }
+    }
+
     var dy = p.y - dragLast;
     dragMoved += Math.abs(dy);
     var dt = (e.timeStamp || 0) - lastT;
@@ -673,6 +816,7 @@ var Timeline = (function () {
     }
     if (pcount === 0) {
       canvas.classList.remove("dragging");
+      if (dropLaneDrag()) return;
       if (dragMoved < 6 && p) {
         var t = e.timeStamp || 0;
         if (t - lastTapT < 320 && Math.abs(p.y - lastTapY) < 20) {
@@ -769,11 +913,12 @@ var Timeline = (function () {
     ctx = canvas.getContext("2d");
     handlers.select = opts.onSelect || null;
     handlers.addAt = opts.onAddAt || null;
+    handlers.laneChange = opts.onLaneChange || null;
 
     canvas.addEventListener("pointerdown", onDown);
     canvas.addEventListener("pointermove", onMove);
     canvas.addEventListener("pointerup", onUp);
-    canvas.addEventListener("pointercancel", onUp);
+    canvas.addEventListener("pointercancel", function (e) { cancelLaneDrag(); onUp(e); });
     canvas.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("keydown", onKey);
     document.addEventListener("gesturestart", function (e) { e.preventDefault(); });
