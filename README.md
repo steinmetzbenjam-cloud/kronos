@@ -53,8 +53,19 @@ Kronos s'ouvre en plein écran, sans barre de navigateur, et fonctionne hors lig
 
 Les **périodes** (avec une année de fin) s'affichent en barres verticales
 à gauche ; les **dates ponctuelles** sont des points sur l'axe, avec leur
-libellé à droite. Quand on est très dézoomé, seuls les libellés qui tiennent
-sans se chevaucher sont affichés — les autres réapparaissent en zoomant.
+libellé à droite.
+
+**Aucun libellé n'en recouvre un autre.** Quand plusieurs événements se
+bousculent, Kronos ouvre autant de colonnes que la largeur le permet et place
+chaque libellé dans celle qui le rapproche le plus de sa date, un trait de
+rappel le reliant à son point. Le nombre de colonnes est calculé par essais
+successifs : le minimum qui permet de tout afficher.
+
+À une échelle de travail — quelques siècles — tout tient. En vue d'ensemble
+sur 6 400 ans, la place manque physiquement : il faudrait 6 000 px de hauteur
+pour 450 disponibles. Les libellés surnuméraires sont alors omis, mais **le
+point de chaque événement reste sur l'axe** et son libellé réapparaît dès
+qu'on zoome.
 
 Les années **avant J.-C. se saisissent en négatif** : `-753` pour 753 av. J.-C.
 
