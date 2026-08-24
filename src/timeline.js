@@ -241,15 +241,19 @@ var Timeline = (function () {
 
     occupation = [];
 
-    /* Les colonnes choisies à la main sont servies en premier : une barre
-       déplacée garde sa colonne et repousse ailleurs celles que la frise avait
-       placées toute seule. Seul cas où l'on décale : deux barres déplacées à
-       la main qui voudraient la même colonne sur la même période. */
-    var libres = [];
+    /* Les colonnes choisies à la main sont servies en premier, et de la plus
+       récente à la plus ancienne : la dernière barre déplacée obtient toujours
+       la colonne visée ; celles posées avant s'écartent si elles gênent, comme
+       le font les barres placées automatiquement. */
+    var libres = [], manuelles = [];
     periods.forEach(function (p) {
-      if (p.lane === null || p.lane === undefined) { libres.push(p); return; }
+      if (p.lane === null || p.lane === undefined) libres.push(p);
+      else manuelles.push(p);
+    });
+    manuelles.sort(function (a, b) { return (b.laneAt || 0) - (a.laneAt || 0); });
+    manuelles.forEach(function (p) {
       var voulue = Math.max(0, Math.min(p.lane, MAX_LANES - 1));
-      p._lane = laneLibreProche(p, voulue);   /* n'examine que les manuelles déjà posées */
+      p._lane = laneLibreProche(p, voulue);
       occuper(p._lane, p);
     });
     libres.forEach(function (p) {

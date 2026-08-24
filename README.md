@@ -61,11 +61,10 @@ on est très dézoomé, seuls ceux qui tiennent sans se chevaucher sont affiché
 **le point de chaque événement reste sur l'axe** et son libellé réapparaît dès
 qu'on zoome.
 
-**Les barres de période ne se chevauchent jamais.** Une barre déplacée à la
-main obtient toujours la colonne visée : les barres que la frise avait placées
-toute seule s'écartent pour lui faire place. Seul cas où le choix est décalé —
-deux barres déplacées à la main qui voudraient la même colonne sur la même
-période : la seconde se pose sur la colonne libre la plus proche.
+**Les barres de période ne se chevauchent jamais**, et **la dernière barre que
+tu déplaces obtient toujours la colonne visée**. Tout le reste s'écarte pour
+lui faire place : les barres placées automatiquement, mais aussi celles que tu
+avais déplacées auparavant. Le dernier geste l'emporte.
 
 L'écartement des colonnes laisse aux noms verticaux la place de se lire sans se
 toucher ; quand les barres deviennent trop serrées, les noms s'effacent plutôt

@@ -70,6 +70,11 @@ var Store = (function () {
         var v = num(raw.l !== undefined ? raw.l : raw.lane);
         return v === null ? null : Math.max(0, Math.round(v));
       })(),
+      /* moment du déplacement : la barre déplacée en dernier l'emporte */
+      laneAt: (function () {
+        var v = num(raw.la !== undefined ? raw.la : raw.laneAt);
+        return v === null ? 0 : v;
+      })(),
       /* carte personnelle : identifiant + position du point, en fraction 0-1 */
       mapId: (raw.mi !== undefined ? raw.mi : raw.mapId) || null,
       mapX: num(raw.mx !== undefined ? raw.mx : raw.mapX),
@@ -262,8 +267,9 @@ var Store = (function () {
     setLane: function (id, lane) {
       for (var i = 0; i < state.events.length; i++) {
         if (state.events[i].id === id) {
-          state.events[i].lane = (lane === null || lane === undefined)
-            ? null : Math.max(0, Math.round(lane));
+          var pose = (lane === null || lane === undefined);
+          state.events[i].lane = pose ? null : Math.max(0, Math.round(lane));
+          state.events[i].laneAt = pose ? 0 : Date.now();
           save();
           return state.events[i];
         }
