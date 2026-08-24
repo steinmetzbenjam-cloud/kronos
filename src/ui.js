@@ -91,6 +91,7 @@
                                       : 'Masquer cette catégorie sur la frise') +
         '"><span class="dot" style="background:' + cat.color + '"></span>' +
         esc(cat.label) + '</span></p>' +
+      ligneColonne(ev) +
       (ev.desc
         ? '<div class="descbox"><p class="desc">' + renderDesc(ev) + '</p></div>' +
           '<div class="btnrow readmore hidden"><button data-act="read">Tout lire</button></div>'
@@ -141,6 +142,12 @@
         showDetail(ev.id);
         say(masquee ? 'Catégorie « ' + Store.category(ev.cat).label + ' » masquée'
                     : 'Catégorie « ' + Store.category(ev.cat).label + ' » réaffichée');
+      }
+      if (act === "autolane") {
+        Store.setLane(ev.id, null);
+        Timeline.rebuild();
+        showDetail(ev.id);
+        say("Colonne à nouveau automatique");
       }
       if (act === "monter" || act === "descendre") {
         if (Store.reorder(ev.id, act === "monter" ? -1 : 1)) {
@@ -558,7 +565,10 @@
     if (!data.t) { say("Il faut un titre"); return; }
     if (isNaN(data.s)) { say("Année de début invalide"); return; }
     var prev = editingId ? Store.get(editingId) : null;
-    if (prev) { data.mi = prev.mapId; data.mx = prev.mapX; data.my = prev.mapY; }
+    if (prev) {
+      data.mi = prev.mapId; data.mx = prev.mapX; data.my = prev.mapY;
+      data.l = prev.lane;   /* la colonne choisie à la main survit à une modification */
+    }
     var saved = editingId ? Store.update(editingId, data) : Store.add(data);
     closeForm();
     Timeline.rebuild();
@@ -591,6 +601,15 @@
       ' title="Placer plus haut dans la journée">↑</button>' +
       '<button type="button" data-act="descendre"' + (rang === groupe.length ? ' disabled' : '') +
       ' title="Placer plus bas dans la journée">↓</button></span>';
+  }
+
+  /* Colonne d'une barre de période : rappelée seulement si elle a été fixée
+     à la main en tirant la barre sur le côté. */
+  function ligneColonne(ev) {
+    if (ev.lane === null || ev.lane === undefined) return "";
+    if (ev.endYear === null || ev.end <= ev.start) return "";
+    return '<p class="stat colonne">Colonne ' + (ev.lane + 1) + ' (placée à la main) ' +
+      '<button data-act="autolane">Replacer automatiquement</button></p>';
   }
 
   /* Ligne compacte sous la date : mention « environ » et flèches de position. */
@@ -1239,6 +1258,10 @@
   Photos.init();
   Timeline.init({
     onSelect: function (id) { if (id) showDetail(id); else closePanel(); },
-    onAddAt: function (year) { openForm(null, year); }
+    onAddAt: function (year) { openForm(null, year); },
+    onLaneChange: function (id, lane) {
+      if (panelMode === "detail" && Timeline.selected() === id) showDetail(id);
+      say("Colonne " + (lane + 1));
+    }
   });
 })();
