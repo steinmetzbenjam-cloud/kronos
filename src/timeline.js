@@ -179,7 +179,10 @@ var Timeline = (function () {
     /* Les voies se resserrent quand les périodes sont nombreuses, pour que
        toutes restent visibles au lieu d'être coupées à droite. */
     var avail = Math.max(W * (narrow ? 0.50 : 0.45) - laneX, 30);
-    var pitch = Math.min(narrow ? 13 : 16, Math.max(5, avail / Math.max(laneCount, 1)));
+    /* Écart entre deux barres. Assez large pour que les noms verticaux, halo
+       compris, ne se touchent pas ; resserré seulement si les barres sont
+       nombreuses. */
+    var pitch = Math.min(narrow ? 16 : 22, Math.max(5, avail / Math.max(laneCount, 1)));
     return {
       narrow: narrow,
       gutter: gutter,
@@ -431,14 +434,14 @@ var Timeline = (function () {
       }
 
       var visH = bot - top;
-      if (visH > 78 && L.laneW >= 8) {
+      if (visH > 78 && L.pitch >= 15) {
         ctx.save();
         ctx.globalAlpha = dim ? 0.25 : 1;
         ctx.translate(x + L.laneW / 2, (top + bot) / 2);
         ctx.rotate(-Math.PI / 2);
         ctx.font = "600 11px " + FONT;
         ctx.fillStyle = "#12151c";
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2;
         ctx.strokeStyle = "rgba(18,21,28,0.85)";
         ctx.strokeText(p.title, 0, 0, visH - 16);
         ctx.fillStyle = "#ffffff";
@@ -473,87 +476,42 @@ var Timeline = (function () {
       ctx.textBaseline = "middle";
     }
 
-    /* --- événements ponctuels, répartis en colonnes --- */
-    /* Une seule colonne ne peut pas accueillir tous les libellés quand ils
-       sont nombreux : on en ouvre autant que la largeur le permet, et chaque
-       libellé va dans celle qui le rapproche le plus de sa vraie date. */
+    /* --- événements ponctuels : une seule colonne --- */
     var colX = Math.min(L.laneX + laneCount * L.pitch + 12, W * 0.55);
-    var dispo = Math.max(W - colX - 10, 90);
-    var largeurMin = L.narrow ? 112 : 150;
-    var nbColMax = Math.max(1, Math.floor(dispo / largeurMin));
-
-    var visibles = [];
+    var lastY = -1e9;
+    ctx.textAlign = "left";
     points.forEach(function (p) {
       if (!visible(p)) return;
       var py = yearToY(p.start);
       if (py < -30 || py > H + 30) return;
-      visibles.push({ p: p, py: py });
-    });
-
-    var PAS = 16;
-    /* Distance tolérée entre un point et son libellé. Généreuse : le trait de
-       rappel et l'année inscrite lèvent l'ambiguïté, et c'est ce qui permet
-       d'afficher le plus d'événements possible. */
-    var MAX_SHIFT = Math.max(H * 0.45, Math.min(H * 0.9, (view.ppy / 365) * 6));
-
-    /* Range les libellés dans `n` colonnes ; chacun va dans celle qui le
-       rapproche le plus de sa date. Renvoie le placement et le nombre de
-       laissés-pour-compte. */
-    function placer(n) {
-      var derniers = [], c;
-      for (c = 0; c < n; c++) derniers.push(-1e9);
-      var liste = [], manquants = 0;
-      visibles.forEach(function (v) {
-        var meilleure = 0, meilleurY = Infinity;
-        for (var k = 0; k < n; k++) {
-          var y = Math.max(v.py, derniers[k] + PAS);
-          if (y < meilleurY) { meilleurY = y; meilleure = k; }
-        }
-        var affiche = (meilleurY - v.py) <= MAX_SHIFT && meilleurY <= H + 10;
-        if (affiche) derniers[meilleure] = meilleurY; else manquants++;
-        liste.push({ p: v.p, py: v.py, col: meilleure, ly: meilleurY, affiche: affiche });
-      });
-      return { liste: liste, manquants: manquants };
-    }
-
-    /* On ouvre le moins de colonnes possible, mais assez pour que rien ne
-       manque : la moyenne sous-estime toujours, les événements se groupant. */
-    var depart = Math.max(1, Math.ceil(visibles.length * PAS / Math.max(H, 1)));
-    var nbCol = Math.min(depart, nbColMax);
-    var essai = placer(nbCol);
-    while (essai.manquants > 0 && nbCol < nbColMax) {
-      nbCol++;
-      essai = placer(nbCol);
-    }
-    var poses = essai.liste;
-    var colW = dispo / nbCol;
-
-    /* 2e temps : les traits de rappel, dessinés dessous pour ne pas barrer les mots */
-    poses.forEach(function (o) {
-      if (!o.affiche) return;
-      var xc = colX + o.col * colW;
-      ctx.globalAlpha = matched(o.p) ? 1 : 0.18;
-      ctx.strokeStyle = "rgba(120,132,152,0.32)";
-      ctx.lineWidth = 1;
-      if (o.p.approxStart) ctx.setLineDash([3, 3]);
-      ctx.beginPath();
-      ctx.moveTo(L.axisX + 5, o.py);
-      ctx.lineTo(Math.max(xc - 14, L.axisX + 8), o.py);
-      ctx.lineTo(xc - 5, o.ly);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    });
-    ctx.globalAlpha = 1;
-
-    /* 3e temps : points et libellés, par-dessus les traits */
-    ctx.textAlign = "left";
-    poses.forEach(function (o) {
-      var p = o.p, py = o.py;
       var col = Store.category(p.cat).color;
+
+      /* Le libellé descend juste ce qu'il faut pour ne pas toucher le
+         précédent, mais jamais de plus de MAX_SHIFT : au-delà on ne garde que
+         le point, et le libellé revient dès qu'on zoome. */
+      var MAX_SHIFT = Math.max(34, Math.min(H * 0.7, (view.ppy / 365) * 6));
+      var ly = Math.max(py, lastY + 18);
+      var showLabel = (ly - py) <= MAX_SHIFT && ly <= H + 10;
+      if (showLabel) lastY = ly;
+
       var dim = !matched(p);
       var sel = selectedId === p.id;
       ctx.globalAlpha = dim ? 0.18 : 1;
 
+      /* trait de rappel */
+      if (showLabel) {
+        ctx.strokeStyle = "rgba(120,132,152,0.45)";
+        ctx.lineWidth = 1;
+        if (p.approxStart) ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(L.axisX + 5, py);
+        ctx.lineTo(Math.max(colX - 16, L.axisX + 8), py);
+        ctx.lineTo(colX - 6, ly);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      /* point sur l'axe : plein si la date est sûre, creux si elle est approximative */
       var r = sel ? 5.5 : 3.6;
       if (p.approxStart) {
         ctx.strokeStyle = col;
@@ -572,26 +530,25 @@ var Timeline = (function () {
         ctx.beginPath(); ctx.arc(L.axisX, py, 8.5, 0, Math.PI * 2); ctx.stroke();
       }
 
-      if (!o.affiche) {
+      if (!showLabel) {
         ctx.globalAlpha = 1;
         hits.push({ id: p.id, x: L.axisX - 10, y: py - 8, w: 20, h: 16 });
         return;
       }
 
-      var xc = colX + o.col * colW;
       ctx.textBaseline = "middle";
       var yl = (p.approxStart ? "≈ " : "") + fmtYearShort(p.startYear);
       ctx.font = "600 12.5px " + FONT;
       ctx.fillStyle = sel ? "#ffffff" : "#e0b25a";
-      ctx.fillText(yl, xc, o.ly);
+      ctx.fillText(yl, colX, ly);
       var wy = ctx.measureText(yl).width;
-      var tx = xc + wy + 8;
+      var tx = colX + wy + 10;
       ctx.font = (sel ? "600 " : "") + "12.5px " + FONT;
       ctx.fillStyle = sel ? "#ffffff" : "#dbe2ec";
-      ctx.fillText(couper(p.title, colW - wy - 16), tx, o.ly);
+      ctx.fillText(couper(p.title, W - tx - 12), tx, ly);
       ctx.globalAlpha = 1;
 
-      hits.push({ id: p.id, x: xc - 20, y: o.ly - 9, w: colW + 16, h: 18 });
+      hits.push({ id: p.id, x: colX - 24, y: ly - 9, w: W - colX + 24, h: 18 });
       hits.push({ id: p.id, x: L.axisX - 9, y: py - 9, w: 18, h: 18 });
     });
 

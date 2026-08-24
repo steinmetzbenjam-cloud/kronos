@@ -56,17 +56,16 @@ Les **périodes** (avec une année de fin) s'affichent en barres verticales
 à gauche ; les **dates ponctuelles** sont des points sur l'axe, avec leur
 libellé à droite.
 
-**Aucun libellé n'en recouvre un autre.** Quand plusieurs événements se
-bousculent, Kronos ouvre autant de colonnes que la largeur le permet et place
-chaque libellé dans celle qui le rapproche le plus de sa date, un trait de
-rappel le reliant à son point. Le nombre de colonnes est calculé par essais
-successifs : le minimum qui permet de tout afficher.
-
-À une échelle de travail — quelques siècles — tout tient. En vue d'ensemble
-sur 6 400 ans, la place manque physiquement : il faudrait 6 000 px de hauteur
-pour 450 disponibles. Les libellés surnuméraires sont alors omis, mais **le
-point de chaque événement reste sur l'axe** et son libellé réapparaît dès
+Les libellés des dates ponctuelles s'alignent en **une seule colonne**. Quand
+on est très dézoomé, seuls ceux qui tiennent sans se chevaucher sont affichés ;
+**le point de chaque événement reste sur l'axe** et son libellé réapparaît dès
 qu'on zoome.
+
+**Les barres de période ne se chevauchent jamais.** Chacune va dans une colonne
+où aucune autre n'occupe la même tranche de temps, et l'écartement des colonnes
+laisse aux noms verticaux la place de se lire sans se toucher. Quand les barres
+deviennent trop serrées, les noms s'effacent plutôt que de se superposer — un
+clic sur la barre donne son nom.
 
 ### Ranger les barres par importance
 
