@@ -61,11 +61,15 @@ on est très dézoomé, seuls ceux qui tiennent sans se chevaucher sont affiché
 **le point de chaque événement reste sur l'axe** et son libellé réapparaît dès
 qu'on zoome.
 
-**Les barres de période ne se chevauchent jamais.** Chacune va dans une colonne
-où aucune autre n'occupe la même tranche de temps, et l'écartement des colonnes
-laisse aux noms verticaux la place de se lire sans se toucher. Quand les barres
-deviennent trop serrées, les noms s'effacent plutôt que de se superposer — un
-clic sur la barre donne son nom.
+**Les barres de période ne se chevauchent jamais**, ni automatiquement, ni
+après un déplacement à la main. Glisser une barre vers une colonne déjà
+occupée sur la même tranche de temps ne la superpose pas : elle se pose sur la
+colonne libre la plus proche. Un choix de colonne valide, lui, est respecté à
+l'identique.
+
+L'écartement des colonnes laisse aux noms verticaux la place de se lire sans se
+toucher ; quand les barres deviennent trop serrées, les noms s'effacent plutôt
+que de se superposer — un clic sur la barre donne son nom.
 
 ### Ranger les barres par importance
 

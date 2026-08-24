@@ -197,6 +197,36 @@ var Timeline = (function () {
   /* Voies des périodes : calculées sur les années (stables au zoom).
      Une barre dont la colonne a été fixée à la main (ev.lane) y reste ;
      les autres se glissent dans le premier espace libre à sa gauche. */
+  /* occupation[l] : tranches de temps déjà prises dans la colonne l */
+  var occupation = [];
+
+  function occuper(l, p) {
+    if (!occupation[l]) occupation[l] = [];
+    occupation[l].push({ s: p.start, e: p.end, id: p.id });
+  }
+
+  /* La colonne l est-elle déjà prise sur la période de `p` ? On ignore `p`
+     lui-même, pour pouvoir interroger pendant qu'on le déplace. */
+  function laneOccupee(l, p) {
+    var arr = occupation[l];
+    if (!arr) return false;
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i].id === p.id) continue;
+      if (p.start < arr[i].e && p.end > arr[i].s) return true;
+    }
+    return false;
+  }
+
+  /* Colonne libre la plus proche de celle demandée. */
+  function laneLibreProche(p, voulue) {
+    if (!laneOccupee(voulue, p)) return voulue;
+    for (var d = 1; d < MAX_LANES; d++) {
+      if (voulue + d < MAX_LANES && !laneOccupee(voulue + d, p)) return voulue + d;
+      if (voulue - d >= 0 && !laneOccupee(voulue - d, p)) return voulue - d;
+    }
+    return voulue;
+  }
+
   function rebuild() {
     var all = Store.all();
     periods = []; points = []; eras = [];
@@ -209,29 +239,21 @@ var Timeline = (function () {
     periods.sort(function (a, b) { return (a.start - b.start) || (a.ord - b.ord) || (b.end - a.end); });
     points.sort(function (a, b) { return (a.start - b.start) || (a.ord - b.ord); });
 
-    var pris = [];   /* pris[l] : intervalles déjà occupés dans la colonne l */
-    function libre(l, p) {
-      var arr = pris[l];
-      if (!arr) return true;
-      for (var i = 0; i < arr.length; i++)
-        if (p.start < arr[i].e && p.end > arr[i].s) return false;
-      return true;
-    }
-    function occuper(l, p) {
-      if (!pris[l]) pris[l] = [];
-      pris[l].push({ s: p.start, e: p.end });
-    }
+    occupation = [];
 
-    /* Les colonnes choisies à la main sont réservées en premier. */
+    /* Les colonnes choisies à la main sont servies en premier, mais jamais au
+       prix d'un recouvrement : si la colonne demandée est déjà prise sur la
+       même tranche de temps, la barre glisse vers la plus proche libre. */
     var libres = [];
     periods.forEach(function (p) {
       if (p.lane === null || p.lane === undefined) { libres.push(p); return; }
-      p._lane = Math.max(0, Math.min(p.lane, MAX_LANES - 1));
+      var voulue = Math.max(0, Math.min(p.lane, MAX_LANES - 1));
+      p._lane = laneLibreProche(p, voulue);
       occuper(p._lane, p);
     });
     libres.forEach(function (p) {
       var l = 0;
-      while (l < MAX_LANES - 1 && !libre(l, p)) l++;
+      while (l < MAX_LANES - 1 && laneOccupee(l, p)) l++;
       p._lane = l;
       occuper(l, p);
     });
@@ -636,6 +658,9 @@ var Timeline = (function () {
     var l = laneAtX(x + laneDrag.grab, L);
     if (l < 0) l = 0;
     if (l > laneDrag.max) l = laneDrag.max;
+    /* On ne dépose jamais sur une colonne déjà occupée à la même période :
+       la barre file vers la plus proche disponible. */
+    l = laneLibreProche(laneDrag.ev, l);
     if (l === laneDrag.lane) return;
     laneDrag.lane = l;
     laneDrag.ev._lane = l;
