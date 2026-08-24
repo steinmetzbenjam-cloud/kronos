@@ -241,14 +241,15 @@ var Timeline = (function () {
 
     occupation = [];
 
-    /* Les colonnes choisies à la main sont servies en premier, mais jamais au
-       prix d'un recouvrement : si la colonne demandée est déjà prise sur la
-       même tranche de temps, la barre glisse vers la plus proche libre. */
+    /* Les colonnes choisies à la main sont servies en premier : une barre
+       déplacée garde sa colonne et repousse ailleurs celles que la frise avait
+       placées toute seule. Seul cas où l'on décale : deux barres déplacées à
+       la main qui voudraient la même colonne sur la même période. */
     var libres = [];
     periods.forEach(function (p) {
       if (p.lane === null || p.lane === undefined) { libres.push(p); return; }
       var voulue = Math.max(0, Math.min(p.lane, MAX_LANES - 1));
-      p._lane = laneLibreProche(p, voulue);
+      p._lane = laneLibreProche(p, voulue);   /* n'examine que les manuelles déjà posées */
       occuper(p._lane, p);
     });
     libres.forEach(function (p) {
@@ -658,9 +659,6 @@ var Timeline = (function () {
     var l = laneAtX(x + laneDrag.grab, L);
     if (l < 0) l = 0;
     if (l > laneDrag.max) l = laneDrag.max;
-    /* On ne dépose jamais sur une colonne déjà occupée à la même période :
-       la barre file vers la plus proche disponible. */
-    l = laneLibreProche(laneDrag.ev, l);
     if (l === laneDrag.lane) return;
     laneDrag.lane = l;
     laneDrag.ev._lane = l;
