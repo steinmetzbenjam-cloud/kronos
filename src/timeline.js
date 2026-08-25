@@ -365,8 +365,11 @@ var Timeline = (function () {
       /* Le nom court verticalement dans la marge de gauche : il ne recouvre
          ainsi ni les barres ni les libellés d'événements. */
       var haut = Math.max(y1, 0), bas = Math.min(y2, H);
-      var visible = bas - haut;
-      if (visible > 70) {
+      /* Nommée hauteurVisible et non « visible » : ce callback appelle la
+         fonction visible(), et un var du même nom la masquerait dans toute
+         la portée — y compris avant sa propre ligne. */
+      var hauteurVisible = bas - haut;
+      if (hauteurVisible > 70) {
         ctx.save();
         ctx.translate(15, (haut + bas) / 2);
         ctx.rotate(-Math.PI / 2);
@@ -374,8 +377,8 @@ var Timeline = (function () {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillStyle = "rgba(174,187,207,0.95)";
-        ctx.fillText(p.title, 0, 0, visible - 14);
-        var larg = Math.min(ctx.measureText(p.title).width, visible - 14);
+        ctx.fillText(p.title, 0, 0, hauteurVisible - 14);
+        var larg = Math.min(ctx.measureText(p.title).width, hauteurVisible - 14);
         ctx.restore();
         hits.push({ id: p.id, x: 4, y: (haut + bas) / 2 - larg / 2, w: 22, h: larg });
       }
