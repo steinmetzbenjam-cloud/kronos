@@ -1,6 +1,6 @@
 /* Kronos — interface : panneau, formulaire, recherche, import/export */
 (function () {
-  var VERSION = "6.4";
+  var VERSION = "6.5";
   var $ = function (id) { return document.getElementById(id); };
 
   var panel = $("panel"), panelBody = $("panel-body");
@@ -360,35 +360,110 @@
       if (!file) return;
       var reader = new FileReader();
       reader.onload = function () {
+        var texte = String(reader.result);
+        demanderImport(texte, function (mode) { lancerImport(texte, mode); });
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  }
+
+  /* ---------- que faire de ce fichier ? ---------- */
+
+  var importModal = $("importmodal");
+  var importSuite = null;
+
+  /* Les boutons nomment leur effet — « OK » et « Annuler » ne disaient rien
+     de ce qui allait se passer, et le geste réflexe pouvait tout effacer. */
+  function demanderImport(texte, suite) {
+    var info;
+    try {
+      var d = JSON.parse(texte);
+      info = {
+        theme: d.format === "kronos-theme-v1",
+        events: (d.events || []).length,
+        themes: (d.themes || []).length,
+        cats: (d.categories || []).length,
+        maps: (d.maps || []).length,
+        photos: (d.photos || []).length
+      };
+    } catch (err) {
+      alert("Fichier illisible : " + err.message);
+      return;
+    }
+
+    var contenu = [];
+    if (info.events) contenu.push(info.events + " événement" + (info.events > 1 ? "s" : ""));
+    if (info.themes) contenu.push(info.themes + " thème" + (info.themes > 1 ? "s" : ""));
+    if (info.cats) contenu.push(info.cats + " catégorie" + (info.cats > 1 ? "s" : ""));
+    if (info.maps) contenu.push(info.maps + " carte" + (info.maps > 1 ? "s" : ""));
+    if (info.photos) contenu.push(info.photos + " image" + (info.photos > 1 ? "s" : ""));
+
+    var jai = Store.all().length;
+    $("import-titre").textContent = info.theme ? "Recevoir ce thème" : "Importer ce fichier";
+    $("import-resume").textContent = "Ce fichier contient " +
+      (contenu.length ? contenu.join(", ") : "aucune donnée reconnue") + ".";
+
+    $("import-ajouter-detail").textContent = info.theme
+      ? "Tes " + jai + " événements actuels sont conservés. Ceux que tu as déjà ne seront pas ajoutés en double."
+      : "Tes " + jai + " événements actuels sont conservés. Les nouveaux s'ajoutent, les doublons sont ignorés.";
+
+    /* Un fichier de thème n'est qu'un sujet : le remplacement n'a pas de sens
+       et n'est même pas proposé. */
+    $("import-remplacer").classList.toggle("hidden", info.theme);
+    $("import-remplacer-detail").textContent =
+      "Tes " + jai + " événements actuels seront supprimés définitivement.";
+
+    $("import-choix").classList.remove("hidden");
+    $("import-confirme").classList.add("hidden");
+    $("import-vraiment").classList.add("hidden");
+    $("import-annuler").textContent = "Annuler";
+    $("import-avertit").textContent =
+      "Tes " + jai + " événements et tes catégories seront effacés, puis remplacés par le contenu du fichier. " +
+      "C'est définitif : rien ne permet de revenir en arrière.\n\n" +
+      "Si tu n'as pas d'export récent, annule et fais-en un d'abord.";
+
+    importSuite = suite;
+    importModal.classList.remove("hidden");
+  }
+
+  function fermerImport() {
+    importModal.classList.add("hidden");
+    importSuite = null;
+  }
+
+  $("import-ajouter").addEventListener("click", function () {
+    var suite = importSuite;
+    fermerImport();
+    if (suite) suite("merge");
+  });
+
+  /* Effacer une frise est irréversible : le second écran nomme ce qui
+     disparaît avant que le bouton rouge n'apparaisse. */
+  $("import-remplacer").addEventListener("click", function () {
+    $("import-choix").classList.add("hidden");
+    $("import-confirme").classList.remove("hidden");
+    $("import-vraiment").classList.remove("hidden");
+    $("import-titre").textContent = "Effacer toute ta frise ?";
+    $("import-annuler").textContent = "Non, garder ma frise";
+  });
+
+  $("import-vraiment").addEventListener("click", function () {
+    var suite = importSuite;
+    fermerImport();
+    if (suite) suite("replace");
+  });
+
+  $("import-annuler").addEventListener("click", function () {
+    fermerImport();
+    say("Import annulé");
+  });
+  importModal.addEventListener("click", function (e) {
+    if (e.target === importModal) { fermerImport(); say("Import annulé"); }
+  });
+
+  function lancerImport(texte, mode) {
         try {
-          var texte = String(reader.result);
-          var mode;
-          if (Store.estUnTheme(texte)) {
-            /* Un fichier de thème s'ajoute, toujours : ses événements ne sont
-               qu'un sujet, pas une frise. La question ne se pose donc pas. */
-            mode = "merge";
-          } else {
-            /* La question se pose pour une sauvegarde complète — et elle
-               engage tout le travail accumulé. On dit ce qui sera détruit,
-               et on met le remplacement du côté d'« Annuler », pour que le
-               réflexe « OK » soit le geste inoffensif. */
-            var n = Store.all().length;
-            mode = confirm(
-              "Ajouter le contenu de ce fichier à ta frise ?\n\n" +
-              "OK = ajouter (rien n'est perdu, les doublons sont ignorés)\n" +
-              "Annuler = choisir plutôt de tout remplacer"
-            ) ? "merge" : "remplacer?";
-            if (mode === "remplacer?") {
-              mode = confirm(
-                "REMPLACER TOUTE LA FRISE ?\n\n" +
-                "Tes " + n + " événements actuels seront définitivement " +
-                "supprimés et remplacés par ceux du fichier.\n\n" +
-                "Cette action est irréversible. Exporte d'abord si tu as un doute.\n\n" +
-                "OK = supprimer et remplacer\nAnnuler = ne rien faire"
-              ) ? "replace" : null;
-              if (!mode) { say("Import annulé"); return; }
-            }
-          }
           var res = Store.importJSON(texte, mode);
           Timeline.rebuild(); Timeline.fitAll(); closePanel();
 
@@ -450,13 +525,9 @@
           } else {
             say(bilan());
           }
-        } catch (err) {
-          alert("Fichier illisible : " + err.message);
-        }
-      };
-      reader.readAsText(file);
-    };
-    input.click();
+    } catch (err) {
+      alert("Fichier illisible : " + err.message);
+    }
   }
 
   /* ---------- formulaire ---------- */
