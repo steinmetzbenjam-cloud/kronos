@@ -166,6 +166,17 @@ Dans le menu, toucher une pastille de catégorie la **masque sur la frise**
 sans rien supprimer — pratique pour n'afficher que les guerres, ou tout
 sauf elles.
 
+### Cadrer une catégorie
+
+Le bouton **Catégorie**, à gauche de « + Événement », ouvre la liste des
+catégories et de leurs sous-catégories, chacune avec son nombre d'événements et
+la période qu'elle couvre. Un appui **cale la frise pour que tous ses
+événements tiennent à l'écran** — zoom et position calculés d'un coup, avec une
+marge.
+
+Choisir une sous-catégorie cadre uniquement ses événements ; choisir la
+catégorie mère cadre l'ensemble. Les entrées sans aucun événement sont grisées.
+
 ### Sous-catégories
 
 Le bouton **+** au bout d'une ligne de l'éditeur crée une **sous-catégorie**.

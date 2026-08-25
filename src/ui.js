@@ -1,6 +1,6 @@
 /* Kronos — interface : panneau, formulaire, recherche, import/export */
 (function () {
-  var VERSION = "5.6";
+  var VERSION = "5.7";
   var $ = function (id) { return document.getElementById(id); };
 
   var panel = $("panel"), panelBody = $("panel-body");
@@ -1270,6 +1270,66 @@
   });
   $("pin-cancel").addEventListener("click", closePin);
 
+  /* ---------- cadrer une catégorie ---------- */
+
+  var catZoom = $("catzoom"), catZoomList = $("catzoomlist");
+
+  /* Bornes de temps couvertes par une catégorie ou une sous-catégorie. */
+  function etendue(id, sous) {
+    var a = Infinity, b = -Infinity, n = 0;
+    Store.all().forEach(function (ev) {
+      if (sous ? ev.sub !== id : ev.cat !== id) return;
+      n++;
+      if (ev.start < a) a = ev.start;
+      var fin = (ev.end !== null && ev.end !== undefined) ? ev.end : ev.start;
+      if (fin > b) b = fin;
+    });
+    return n ? { a: a, b: b, n: n } : null;
+  }
+
+  function ligneZoom(c, sous) {
+    var e = etendue(c.id, sous);
+    var dispo = !!e;
+    return '<button type="button" class="zoomrow' + (sous ? ' sous' : '') +
+      (dispo ? '' : ' vide') + '"' + (dispo ? ' data-zoom="' + escAttr(c.id) +
+      '" data-sous="' + (sous ? "1" : "0") + '"' : ' disabled') + '>' +
+      '<span class="dot" style="background:' + c.color + '"></span>' +
+      '<span class="nom">' + esc(c.label) + '</span>' +
+      '<span class="meta">' + (dispo
+        ? e.n + (e.n > 1 ? ' événements · ' : ' événement · ') +
+          Timeline.fmtYearLong(Math.round(e.a)) + ' → ' + Timeline.fmtYearLong(Math.round(e.b))
+        : 'aucun événement') + '</span></button>';
+  }
+
+  function openCatZoom() {
+    var html = "";
+    Store.topCategories().forEach(function (c) {
+      html += ligneZoom(c, false);
+      Store.subCategories(c.id).forEach(function (sc) { html += ligneZoom(sc, true); });
+    });
+    catZoomList.innerHTML = html;
+    catZoom.classList.remove("hidden");
+  }
+  function closeCatZoom() { catZoom.classList.add("hidden"); }
+
+  catZoomList.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("[data-zoom]") : null;
+    if (!b) return;
+    var id = b.getAttribute("data-zoom");
+    var sous = b.getAttribute("data-sous") === "1";
+    var e2 = etendue(id, sous);
+    if (!e2) return;
+    closeCatZoom();
+    closePanel();
+    Timeline.fitRange(e2.a, e2.b);
+    say('« ' + Store.category(id).label + ' » — ' + e2.n +
+        (e2.n > 1 ? ' événements affichés' : ' événement affiché'));
+  });
+
+  $("btn-cat").addEventListener("click", openCatZoom);
+  $("catzoom-close").addEventListener("click", closeCatZoom);
+  catZoom.addEventListener("click", function (e) { if (e.target === catZoom) closeCatZoom(); });
+
   /* ---------- barre du haut ---------- */
 
   $("btn-add").addEventListener("click", function () { openForm(null); });
@@ -1322,7 +1382,8 @@
       return;
     }
     if (e.key === "Escape") {
-      if (!viewModal.classList.contains("hidden")) closeView();
+      if (!catZoom.classList.contains("hidden")) closeCatZoom();
+      else if (!viewModal.classList.contains("hidden")) closeView();
       else if (!chooseModal.classList.contains("hidden")) closeChoose();
       else if (!readModal.classList.contains("hidden")) closeRead();
       else if (!pinModal.classList.contains("hidden")) closePin();

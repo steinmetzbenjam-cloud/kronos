@@ -875,6 +875,19 @@ var Timeline = (function () {
     requestDraw();
   }
 
+  /* Cale la vue pour qu'un intervalle d'années tienne entièrement à l'écran. */
+  function fitRange(a, b) {
+    if (!isFinite(a)) return;
+    if (!isFinite(b) || b <= a) b = a + 1;
+    var etendue = b - a;
+    var marge = Math.max(etendue * 0.07, 0.5);
+    var span = etendue + 2 * marge;
+    view.ppy = Math.max(minPPY(), Math.min(MAX_PPY, H / span));
+    view.top = a - marge;
+    clampView();
+    requestDraw();
+  }
+
   function centerOn(year, ppy) {
     if (ppy) view.ppy = Math.max(minPPY(), Math.min(MAX_PPY, ppy));
     view.top = year - (H / view.ppy) / 2;
@@ -929,6 +942,7 @@ var Timeline = (function () {
     rebuild: rebuild,
     redraw: requestDraw,
     fitAll: fitAll,
+    fitRange: fitRange,
     forgetView: function () {
       try { localStorage.removeItem(VIEW_KEY); } catch (err) {}
       hiddenCats = {};

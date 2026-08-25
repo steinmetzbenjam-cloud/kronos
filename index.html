@@ -8,9 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Kronos">
 <title>Kronos — Frise chronologique</title>
-<link rel="manifest" href="manifest.webmanifest?v=48">
+<link rel="manifest" href="manifest.webmanifest?v=49">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="src/style.css?v=48">
+<link rel="stylesheet" href="src/style.css?v=49">
 </head>
 <body>
 
@@ -24,6 +24,7 @@
   <button id="btn-zoom-out" class="icon" title="Dézoomer">−</button>
   <button id="btn-zoom-in" class="icon" title="Zoomer">+</button>
   <button id="btn-fit" class="icon" title="Tout voir">⤢</button>
+  <button id="btn-cat" title="Cadrer une catégorie"><span class="lbl">Catégorie</span><span class="ico">◍</span></button>
   <button id="btn-add" class="primary">+ Événement</button>
   <button id="btn-menu" class="icon" title="Menu">☰</button>
 </header>
@@ -145,6 +146,19 @@
   <p class="hint" id="view-hint">Pince ou molette pour zoomer · glisse pour déplacer · double-clic pour agrandir</p>
 </div>
 
+<!-- Cadrer une catégorie ou une sous-catégorie -->
+<div id="catzoom" class="hidden">
+  <div class="sheet">
+    <h2>Afficher une catégorie</h2>
+    <p class="hint">La frise se cale pour montrer d'un coup tous les événements choisis.</p>
+    <div id="catzoomlist"></div>
+    <div class="actions">
+      <div class="spacer"></div>
+      <button type="button" id="catzoom-close">Annuler</button>
+    </div>
+  </div>
+</div>
+
 <!-- Choix d'une carte, avec vignettes -->
 <div id="choosemap" class="hidden">
   <div class="sheet">
@@ -175,14 +189,14 @@
 
 <div id="toast" class="hidden"></div>
 
-<script src="src/seed.js?v=48"></script>
-<script src="src/refs.js?v=48"></script>
-<script src="src/places.js?v=48"></script>
-<script src="src/maps.js?v=48"></script>
-<script src="src/photos.js?v=48"></script>
-<script src="src/store.js?v=48"></script>
-<script src="src/timeline.js?v=48"></script>
-<script src="src/ui.js?v=48"></script>
+<script src="src/seed.js?v=49"></script>
+<script src="src/refs.js?v=49"></script>
+<script src="src/places.js?v=49"></script>
+<script src="src/maps.js?v=49"></script>
+<script src="src/photos.js?v=49"></script>
+<script src="src/store.js?v=49"></script>
+<script src="src/timeline.js?v=49"></script>
+<script src="src/ui.js?v=49"></script>
 <script>
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   navigator.serviceWorker.register('sw.js').catch(function(){});
