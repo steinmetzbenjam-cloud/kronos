@@ -473,24 +473,123 @@ var Store = (function () {
         events: state.events
       }, null, 2);
     },
+    /* Un thème seul, prêt à être envoyé : il emporte ses catégories et tous
+       les événements qu'il rassemble, sans quoi il arriverait vide chez le
+       destinataire. Les sous-catégories entraînent leur mère, dont les
+       événements portent l'identifiant. */
+    exportTheme: function (id) {
+      var t = null, i;
+      for (i = 0; i < state.themes.length; i++)
+        if (state.themes[i].id === id) t = state.themes[i];
+      if (!t) throw new Error("Thème introuvable.");
+
+      var garde = {};
+      t.cats.forEach(function (c) { garde[c] = true; });
+
+      var besoin = {};
+      t.cats.forEach(function (c) {
+        besoin[c] = true;
+        var cat = null;
+        for (var j = 0; j < state.categories.length; j++)
+          if (state.categories[j].id === c) cat = state.categories[j];
+        if (cat && cat.parent) besoin[cat.parent] = true;
+      });
+
+      var evts = state.events.filter(function (ev) {
+        return garde[ev.cat] || (ev.sub && garde[ev.sub]);
+      });
+      /* La sous-catégorie d'un événement retenu doit exister à l'arrivée. */
+      evts.forEach(function (ev) {
+        besoin[ev.cat] = true;
+        if (ev.sub) besoin[ev.sub] = true;
+      });
+
+      return JSON.stringify({
+        format: "kronos-theme-v1",
+        exported: new Date().toISOString(),
+        themes: [t],
+        categories: state.categories.filter(function (c) { return besoin[c.id]; }),
+        events: evts
+      }, null, 2);
+    },
+
     importJSON: function (text, mode) {
       var parsed = JSON.parse(text);
       var incoming = (parsed.events || []).map(normalize);
-      if (!incoming.length) throw new Error("Aucun événement trouvé dans ce fichier.");
-      if (mode === "replace") {
-        state.events = incoming;
-        if (parsed.categories && parsed.categories.length) state.categories = parsed.categories;
-      } else {
-        var seen = {};
-        state.events.forEach(function (ev) { seen[ev.title + "|" + ev.startYear] = true; });
-        incoming.forEach(function (ev) {
-          if (!seen[ev.title + "|" + ev.startYear]) state.events.push(ev);
+      var themesEntrants = (parsed.themes || []).map(normalizeTheme);
+      /* Un fichier de thèmes seuls est légitime : c'est ainsi qu'on se passe
+         une sélection sans emporter toute la frise. */
+      if (!incoming.length && !themesEntrants.length)
+        throw new Error("Ni événement ni thème dans ce fichier.");
+
+      var catsAjoutees = 0;
+      if (mode === "replace" && incoming.length &&
+          parsed.categories && parsed.categories.length) {
+        state.categories = parsed.categories;
+      } else if (parsed.categories && parsed.categories.length) {
+        /* Fusion : on ajoute les catégories que cette frise ne connaît pas,
+           sans jamais écraser celles d'ici — le destinataire a pu renommer
+           ou recolorer les siennes, et son choix prime sur le fichier. */
+        parsed.categories.forEach(function (c) {
+          if (!c || !c.id || hasCat(c.id)) return;
+          var cat = { id: String(c.id), label: String(c.label || c.id), color: c.color || "#9aa4b5" };
+          if (c.parent) cat.parent = String(c.parent);
+          state.categories.push(cat);
+          catsAjoutees++;
         });
       }
+
+      var doublons = 0;
+      if (incoming.length) {
+        if (mode === "replace") {
+          state.events = incoming;
+        } else {
+          /* Même titre et même année de début : l'événement est déjà là.
+             C'est la règle que Kronos applique déjà à ses propres mises à
+             jour, on la garde pour qu'un thème reçu deux fois n'en double
+             aucun. */
+          var seen = {};
+          state.events.forEach(function (ev) { seen[ev.title + "|" + ev.startYear] = true; });
+          incoming.forEach(function (ev) {
+            if (seen[ev.title + "|" + ev.startYear]) { doublons++; return; }
+            state.events.push(ev);
+            seen[ev.title + "|" + ev.startYear] = true;
+          });
+        }
+      }
+
+      /* Les catégories du fichier viennent d'être fusionnées : un thème ne
+         devrait plus en désigner d'inconnue. Si c'est le cas, elle est
+         écartée plutôt que laissée pointer dans le vide. */
+      var themesAjoutes = 0, themesVides = 0, catsInconnues = 0;
+      if (themesEntrants.length) {
+        if (mode === "replace") state.themes = [];
+        var connus = {};
+        state.themes.forEach(function (t) { connus[t.label.toLowerCase()] = true; });
+        themesEntrants.forEach(function (t) {
+          var gardees = t.cats.filter(function (c) {
+            if (hasCat(c)) return true;
+            catsInconnues++;
+            return false;
+          });
+          if (!gardees.length) { themesVides++; return; }
+          if (connus[t.label.toLowerCase()]) { themesVides++; return; }
+          t.cats = gardees;
+          state.themes.push(t);
+          connus[t.label.toLowerCase()] = true;
+          themesAjoutes++;
+        });
+      }
+
       save();
       /* Les cartes éventuelles sont renvoyées à l'appelant, qui les confie
          au module Maps (elles ne vivent pas dans le même stockage). */
-      return { events: incoming.length, maps: parsed.maps || [], photos: parsed.photos || [] };
+      return {
+        events: incoming.length - doublons, doublons: doublons,
+        maps: parsed.maps || [], photos: parsed.photos || [],
+        categories: catsAjoutees,
+        themes: themesAjoutes, themesIgnores: themesVides, catsInconnues: catsInconnues
+      };
     }
   };
 })();

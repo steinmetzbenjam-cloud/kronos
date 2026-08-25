@@ -1,6 +1,6 @@
 /* Kronos — interface : panneau, formulaire, recherche, import/export */
 (function () {
-  var VERSION = "6.2";
+  var VERSION = "6.3";
   var $ = function (id) { return document.getElementById(id); };
 
   var panel = $("panel"), panelBody = $("panel-body");
@@ -365,6 +365,27 @@
             ? "replace" : "merge";
           var res = Store.importJSON(String(reader.result), mode);
           Timeline.rebuild(); Timeline.fitAll(); closePanel();
+
+          /* Ce que le fichier a réellement apporté, thèmes compris, et ce
+             qu'il a fallu écarter : un thème refusé en silence laisserait
+             croire à un import complet. */
+          function bilan() {
+            var bouts = [];
+            if (res.events) bouts.push(res.events + " événement" + (res.events > 1 ? "s" : ""));
+            if (res.themes) bouts.push(res.themes + " thème" + (res.themes > 1 ? "s" : ""));
+            if (res.categories) bouts.push(res.categories + " catégorie" + (res.categories > 1 ? "s" : ""));
+            var txt = bouts.length ? bouts.join(", ") + " importés" : "Rien de nouveau";
+            if (res.doublons) {
+              txt += " · " + res.doublons + " déjà " +
+                     (res.doublons > 1 ? "présents" : "présent") + ", ignoré" +
+                     (res.doublons > 1 ? "s" : "");
+            }
+            if (res.themesIgnores) {
+              txt += " · " + res.themesIgnores + " thème" +
+                     (res.themesIgnores > 1 ? "s déjà là" : " déjà là");
+            }
+            return txt;
+          }
           var attendues = {};
           Store.all().forEach(function (ev) { if (ev.mapId) attendues[ev.mapId] = true; });
           var nbAttendues = Object.keys(attendues).length;
@@ -383,25 +404,25 @@
                 return;
               }
               importerImages(function (np) {
-                say(res.events + " événements, " + n + " carte" + (n > 1 ? "s" : "") +
-                    (np ? " et " + np + " image" + (np > 1 ? "s" : "") : "") + " importés");
+                say(bilan() + ", " + n + " carte" + (n > 1 ? "s" : "") +
+                    (np ? " et " + np + " image" + (np > 1 ? "s" : "") : ""));
               });
             });
           } else if (res.photos && res.photos.length) {
             importerImages(function (np) {
-              say(res.events + " événements et " + np + " image" + (np > 1 ? "s" : "") + " importés");
+              say(bilan() + " et " + np + " image" + (np > 1 ? "s" : ""));
             });
           } else if (nbAttendues) {
             /* Le fichier référence des cartes mais ne contient aucune image :
                il a été exporté par une version de Kronos antérieure à 1.7. */
-            alert(res.events + " événements importés, mais ce fichier ne contient " +
+            alert(bilan() + ", mais ce fichier ne contient " +
                   "aucune image de carte.\n\n" + nbAttendues + " carte" +
                   (nbAttendues > 1 ? "s sont référencées" : " est référencée") +
                   " par tes événements.\n\nRefais l'export depuis l'appareil d'origine " +
                   "après avoir rechargé la page : les versions de Kronos antérieures à " +
                   "1.7 n'incluaient pas les images.");
           } else {
-            say(res.events + " événements importés");
+            say(bilan());
           }
         } catch (err) {
           alert("Fichier illisible : " + err.message);
@@ -1592,6 +1613,7 @@
     });
     themeFormCats.innerHTML = html;
     $("themeform-del").classList.toggle("hidden", !t);
+    $("themeform-export").classList.toggle("hidden", !t);
     themeModal.classList.remove("hidden");
     setTimeout(function () { themeForm.elements.label.focus(); }, 30);
   }
@@ -1644,6 +1666,35 @@
     majEtatVoyage();
     say("Thème supprimé");
   });
+
+  /* Exporter un thème, c'est l'envoyer entier : le thème, ses catégories et
+     tous ses événements. À l'arrivée, ceux déjà présents ne sont pas dupliqués. */
+  $("themeform-export").addEventListener("click", function () {
+    if (!editingTheme) return;
+    try {
+      var texte = Store.exportTheme(editingTheme.id);
+      var e = etendueTheme(editingTheme);
+      var blob = new Blob([texte], { type: "application/json" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "kronos-theme-" + slugFichier(editingTheme.label) + ".json";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 6000);
+      say('« ' + editingTheme.label + ' » exporté — ' +
+          (e ? motEvenements(e.n) + ' inclus' : 'aucun événement'));
+    } catch (err) {
+      alert("Export impossible : " + err.message);
+    }
+  });
+
+  /* Nom de fichier lisible, sans accent ni espace. */
+  function slugFichier(label) {
+    var base = String(label).toLowerCase().normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    return base || "sans-nom";
+  }
 
   $("themeform-cancel").addEventListener("click", fermerEditeurTheme);
   themeModal.addEventListener("click", function (e) {
