@@ -2,7 +2,9 @@
 var Store = (function () {
   var KEY = "kronos.data.v1";
   var SEED_VERSION = 4;   /* à incrémenter quand seed.js gagne des entrées */
-  var state = { events: [], categories: [], seedVersion: 0 };
+  /* `themes` : les grands thèmes du Voyage. Chacun retient une sélection de
+     catégories et de sous-catégories ; l'ouvrir n'affiche que celles-là. */
+  var state = { events: [], categories: [], themes: [], seedVersion: 0 };
 
   function uid() {
     if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
@@ -104,10 +106,37 @@ var Store = (function () {
     return id;
   }
 
+  /* Une catégorie supprimée doit sortir des thèmes qui la citaient, sinon
+     ils désigneraient un identifiant mort et se videraient sans le dire. */
+  function purgeFromThemes(morts) {
+    state.themes.forEach(function (t) {
+      t.cats = t.cats.filter(function (c) { return !morts[c]; });
+    });
+  }
+
+  /* Un thème retient une sélection de catégories et de sous-catégories.
+     `cats` mélange les deux niveaux : choisir une catégorie mère emporte
+     toutes ses filles, choisir une fille seule n'emporte qu'elle. */
+  function normalizeTheme(raw) {
+    raw = raw || {};
+    var cats = [];
+    (raw.cats || []).forEach(function (c) {
+      c = String(c);
+      if (c && cats.indexOf(c) === -1) cats.push(c);
+    });
+    return {
+      id: raw.id || uid(),
+      label: String(raw.label || "Sans titre").trim() || "Sans titre",
+      color: raw.color || "#58c2a8",
+      cats: cats
+    };
+  }
+
   function seedData() {
     return {
       categories: window.KRONOS_SEED.categories.slice(),
       events: window.KRONOS_SEED.events.map(normalize),
+      themes: [],
       seedVersion: SEED_VERSION
     };
   }
@@ -176,6 +205,7 @@ var Store = (function () {
       state.categories = (parsed.categories && parsed.categories.length)
         ? parsed.categories : window.KRONOS_SEED.categories.slice();
       state.events = (parsed.events || []).map(normalize);
+      state.themes = (parsed.themes || []).map(normalizeTheme);
       state.seedVersion = parsed.seedVersion || 0;
       if (state.seedVersion !== SEED_VERSION) mergeNewSeed();
     } catch (err) {
@@ -298,6 +328,40 @@ var Store = (function () {
       save();
     },
 
+    /* ---- grands thèmes ---- */
+    themes: function () { return state.themes; },
+    theme: function (id) {
+      for (var i = 0; i < state.themes.length; i++)
+        if (state.themes[i].id === id) return state.themes[i];
+      return null;
+    },
+    addTheme: function (label, color, cats) {
+      var t = normalizeTheme({ label: label, color: color, cats: cats });
+      state.themes.push(t);
+      save();
+      return t;
+    },
+    updateTheme: function (id, patch) {
+      for (var i = 0; i < state.themes.length; i++) {
+        if (state.themes[i].id === id) {
+          var t = state.themes[i];
+          if (patch.label !== undefined && String(patch.label).trim() !== "")
+            t.label = String(patch.label).trim();
+          if (patch.color !== undefined) t.color = patch.color;
+          if (patch.cats !== undefined) t.cats = normalizeTheme({ cats: patch.cats }).cats;
+          save();
+          return t;
+        }
+      }
+      return null;
+    },
+    removeTheme: function (id) {
+      var n = state.themes.length;
+      state.themes = state.themes.filter(function (t) { return t.id !== id; });
+      if (state.themes.length !== n) { save(); return true; }
+      return false;
+    },
+
     /* ---- catégories ---- */
     countInCategory: function (id) {
       return state.events.filter(function (ev) { return ev.cat === id; }).length;
@@ -364,6 +428,8 @@ var Store = (function () {
            précision, ils restent dans la catégorie mère */
         state.events.forEach(function (ev) { if (ev.sub === id) ev.sub = null; });
         state.categories = state.categories.filter(function (c) { return c.id !== id; });
+        var mortSeul = {}; mortSeul[id] = true;
+        purgeFromThemes(mortSeul);
         save();
         return true;
       }
@@ -385,6 +451,9 @@ var Store = (function () {
       state.categories = state.categories.filter(function (c) {
         return c.id !== id && c.parent !== id;
       });
+      var morts = {}; morts[id] = true;
+      for (var k in filles) morts[k] = true;
+      purgeFromThemes(morts);
       save();
       return true;
     },
@@ -398,6 +467,7 @@ var Store = (function () {
         seedVersion: state.seedVersion,
         exported: new Date().toISOString(),
         categories: state.categories,
+        themes: state.themes,
         maps: maps || [],
         photos: photos || [],
         events: state.events

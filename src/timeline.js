@@ -13,6 +13,10 @@ var Timeline = (function () {
   var hits = [];
   var periods = [], points = [], eras = [], laneCount = 1;
   var selectedId = null, hiddenCats = {}, query = "", matchIds = null;
+  /* Thème du Voyage : null = tout est visible. Sinon, un dictionnaire des
+     catégories et sous-catégories retenues. Ce filtre est distinct des
+     masquages manuels : les deux s'appliquent, aucun n'écrase l'autre. */
+  var themeIds = null;
   var drawQueued = false, lastSpan = -1, zoomTimer = null;
   var handlers = { select: null, addAt: null, laneChange: null };
 
@@ -124,8 +128,10 @@ var Timeline = (function () {
       try {
         var masquees = [];
         for (var k in hiddenCats) if (hiddenCats[k]) masquees.push(k);
+        var theme = null;
+        if (themeIds) { theme = []; for (var t in themeIds) if (themeIds[t]) theme.push(t); }
         localStorage.setItem(VIEW_KEY, JSON.stringify({
-          top: view.top, ppy: view.ppy, hidden: masquees
+          top: view.top, ppy: view.ppy, hidden: masquees, theme: theme
         }));
       } catch (err) { /* stockage plein ou refusé : sans conséquence */ }
     }, 400);
@@ -144,6 +150,11 @@ var Timeline = (function () {
       view.ppy = v.ppy;
       hiddenCats = {};
       (v.hidden || []).forEach(function (c) { hiddenCats[c] = true; });
+      themeIds = null;
+      if (v.theme && v.theme.length) {
+        themeIds = {};
+        v.theme.forEach(function (c) { themeIds[c] = true; });
+      }
       clampView();
       return true;
     } catch (err) { return false; }
@@ -299,6 +310,9 @@ var Timeline = (function () {
   }
 
   function visible(ev) {
+    /* Un thème qui retient la catégorie mère emporte ses filles ; un thème
+       qui ne retient qu'une fille laisse dehors le reste de la mère. */
+    if (themeIds && !(themeIds[ev.cat] || (ev.sub && themeIds[ev.sub]))) return false;
     if (hiddenCats[ev.cat]) return false;
     if (ev.sub && hiddenCats[ev.sub]) return false;
     return true;
@@ -336,7 +350,7 @@ var Timeline = (function () {
     /* --- époques : bandes de fond sur toute la largeur --- */
     var L0 = layout();
     eras.forEach(function (p, i) {
-      if (hiddenCats[p.cat]) return;
+      if (!visible(p)) return;
       var y1 = yearToY(p.start), y2 = yearToY(p.end);
       if (y2 < 0 || y1 > H) return;
       var col = couleur(p);
@@ -975,6 +989,7 @@ var Timeline = (function () {
     forgetView: function () {
       try { localStorage.removeItem(VIEW_KEY); } catch (err) {}
       hiddenCats = {};
+      themeIds = null;
       fitAll();
     },
     focusEvent: focusEvent,
@@ -989,6 +1004,37 @@ var Timeline = (function () {
       requestDraw();
     },
     setCatHidden: function (cat, hidden) { hiddenCats[cat] = hidden; saveView(); requestDraw(); },
+    /* `ids` : liste de catégories/sous-catégories à garder, ou null pour
+       lever le filtre. Poser un thème efface les masquages manuels, qui
+       relèvent d'une autre intention et brouilleraient la sélection. */
+    setTheme: function (ids) {
+      if (!ids || !ids.length) themeIds = null;
+      else {
+        themeIds = {};
+        ids.forEach(function (c) { themeIds[c] = true; });
+        hiddenCats = {};
+      }
+      saveView();
+      requestDraw();
+    },
+    themeIds: function () {
+      if (!themeIds) return null;
+      var out = []; for (var k in themeIds) if (themeIds[k]) out.push(k);
+      return out;
+    },
+    /* Bornes des événements actuellement visibles : sert à cadrer un thème
+       qu'on vient d'ouvrir. */
+    visibleRange: function () {
+      var a = Infinity, b = -Infinity, n = 0;
+      Store.all().forEach(function (ev) {
+        if (!visible(ev)) return;
+        n++;
+        if (ev.start < a) a = ev.start;
+        var fin = (ev.end !== null && ev.end !== undefined) ? ev.end : ev.start;
+        if (fin > b) b = fin;
+      });
+      return n ? { a: a, b: b, n: n } : null;
+    },
     isCatHidden: function (cat) { return !!hiddenCats[cat]; },
     select: function (id) { selectedId = id; requestDraw(); },
     selected: function () { return selectedId; },

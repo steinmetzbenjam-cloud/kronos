@@ -166,6 +166,34 @@ Dans le menu, toucher une pastille de catégorie la **masque sur la frise**
 sans rien supprimer — pratique pour n'afficher que les guerres, ou tout
 sauf elles.
 
+### Voyage
+
+Le bouton **Voyage**, en vert à gauche de « Catégorie », ouvre une page pleine
+qui sert à composer ce qu'on veut voir. Elle offre trois entrées.
+
+**Les grands thèmes** rassemblent plusieurs catégories sous un nom. Ouvrir
+« Les rois d'Israël » n'affiche que ses catégories et cale la frise sur la
+période qu'elles couvrent. Le bouton **+ Nouveau thème** en crée un : un nom,
+une couleur, et les cases à cocher de toutes les catégories et
+sous-catégories. Cocher une catégorie mère emporte ses filles ; ne cocher
+qu'une fille laisse dehors le reste de la mère.
+
+**Les périodes** sont les événements qui ont une fin. Les douze plus longues
+sont proposées d'abord — celles qui structurent vraiment la frise — le reste
+d'un clic. En choisir une cadre la vue **sans rien masquer**.
+
+**Les catégories** permettent de n'en afficher qu'une, ou qu'une
+sous-catégorie, et de s'y rendre.
+
+Tant qu'un thème est ouvert, le bouton de la barre prend sa couleur et son
+nom : une frise filtrée ne doit jamais passer pour une frise vide. Le bouton
+**Tout afficher** lève le filtre. Le thème ouvert est retenu d'une session à
+l'autre, comme le zoom et la position.
+
+Poser un thème efface les masquages faits à la main depuis le menu : les deux
+répondent à des intentions différentes et se mélangeraient mal. Les thèmes
+voyagent dans l'export JSON avec les catégories et les événements.
+
 ### Cadrer une catégorie
 
 Le bouton **Catégorie**, à gauche de « + Événement », ouvre la liste des
