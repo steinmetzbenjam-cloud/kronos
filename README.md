@@ -191,8 +191,31 @@ nom : une frise filtrée ne doit jamais passer pour une frise vide. Le bouton
 l'autre, comme le zoom et la position.
 
 Poser un thème efface les masquages faits à la main depuis le menu : les deux
-répondent à des intentions différentes et se mélangeraient mal. Les thèmes
-voyagent dans l'export JSON avec les catégories et les événements.
+répondent à des intentions différentes et se mélangeraient mal.
+
+#### Envoyer un thème à quelqu'un
+
+Le bouton **Exporter**, dans l'éditeur d'un thème, enregistre un fichier
+`kronos-theme-nom.json` qui contient **le thème, ses catégories et tous ses
+événements**. Un thème seul n'aurait servi à rien : il serait arrivé vide chez
+le destinataire, faute des catégories et des dates qu'il désigne.
+
+Le destinataire l'ouvre par **Menu ☰ → Importer**, en choisissant *Ajouter aux
+événements existants*. Il reçoit alors le thème, les catégories qui lui
+manquaient, et les événements qu'il n'avait pas.
+
+**Aucun doublon** : un événement de même titre et de même année de début est
+reconnu comme déjà présent et ignoré. Le même fichier peut donc être importé
+deux fois sans rien dupliquer, et deux thèmes partageant des événements
+n'en créent qu'un exemplaire. Le compte-rendu dit ce qui est entré et ce qui
+était déjà là.
+
+Les catégories du destinataire ne sont jamais écrasées : s'il possède déjà une
+catégorie du même identifiant, sous un autre nom ou une autre couleur, c'est
+la sienne qui reste. Seules les manquantes sont créées.
+
+Les thèmes voyagent aussi dans l'export complet, avec les catégories et les
+événements.
 
 ### Cadrer une catégorie
 
