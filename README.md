@@ -204,8 +204,23 @@ Le destinataire l'ouvre par **Menu ☰ → Importer**, en choisissant *Ajouter a
 événements existants*. Il reçoit alors le thème, les catégories qui lui
 manquaient, et les événements qu'il n'avait pas.
 
+### Ce que l'import demande
+
+Choisir un fichier ouvre une fenêtre qui **annonce ce qu'il contient** —
+« Ce fichier contient 212 événements, 1 catégorie, 2 cartes, 3 images » — puis
+propose deux boutons qui nomment leur effet plutôt que « OK » et « Annuler » :
+
+- **Ajouter à ma frise** — *Tes 531 événements actuels sont conservés. Les
+  nouveaux s'ajoutent, les doublons sont ignorés.*
+- **Effacer ma frise et la remplacer** — *Tes 531 événements actuels seront
+  supprimés définitivement.*
+
+Le nombre affiché est celui de ta frise à cet instant. Le second bouton ouvre
+un écran d'avertissement avant d'agir : rien n'est effacé tant que **Oui, tout
+effacer** n'a pas été pressé, et **Non, garder ma frise** revient en arrière.
+
 Un fichier de thème **s'ajoute toujours** : il ne peut pas remplacer une frise,
-et la question n'est même pas posée. Ses événements ne sont qu'un sujet, pas
+et le bouton d'effacement n'est même pas affiché. Ses événements ne sont qu'un sujet, pas
 une collection complète — « remplacer » y détruirait tout le reste.
 
 **Aucun doublon** : un événement de même titre et de même année de début est

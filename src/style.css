@@ -641,3 +641,31 @@ code{background:var(--bg);padding:1px 5px;border-radius:5px;font-size:12px}
   border:1px dashed var(--line);color:var(--txt-dim);font-size:12.5px;
 }
 .vgplus:active{color:var(--txt);border-color:var(--voyage)}
+
+/* ---------- Fenêtre d'import : nommer l'action, pas « OK » ---------- */
+#importmodal{
+  position:fixed;inset:0;background:rgba(8,10,14,.78);z-index:56;
+  display:flex;align-items:center;justify-content:center;padding:16px;
+  padding-top:calc(16px + var(--safe-t));padding-bottom:calc(16px + var(--safe-b));
+}
+#import-choix{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+/* Boutons hauts, à deux lignes : l'intitulé dit l'acte, la seconde ligne
+   dit ce qu'il advient des données déjà là. */
+#importmodal .gros{
+  display:flex;flex-direction:column;align-items:flex-start;gap:3px;
+  width:100%;text-align:left;padding:12px 14px;min-height:0;
+  border:1px solid var(--line);background:var(--bg);
+}
+#importmodal .gros .quoi{font-size:15px;font-weight:600;color:var(--txt)}
+#importmodal .gros .pourquoi{font-size:12px;font-weight:400;color:var(--txt-dim);line-height:1.35}
+#importmodal #import-ajouter{border-color:rgba(95,201,162,.55)}
+#importmodal #import-ajouter .quoi{color:var(--voyage)}
+#importmodal #import-ajouter:active{background:rgba(95,201,162,.14)}
+#importmodal .rouge{border-color:rgba(224,96,90,.5)}
+#importmodal .rouge .quoi{color:var(--danger)}
+#importmodal .rouge:active{background:rgba(224,96,90,.14)}
+#import-confirme .avertit{
+  white-space:pre-line;margin:8px 0 0;font-size:13.5px;line-height:1.5;
+  color:var(--txt);background:rgba(224,96,90,.12);
+  border:1px solid rgba(224,96,90,.4);border-radius:var(--radius);padding:12px 14px;
+}

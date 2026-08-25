@@ -8,9 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Kronos">
 <title>Kronos — Frise chronologique</title>
-<link rel="manifest" href="manifest.webmanifest?v=56">
+<link rel="manifest" href="manifest.webmanifest?v=57">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="src/style.css?v=56">
+<link rel="stylesheet" href="src/style.css?v=57">
 </head>
 <body>
 
@@ -147,6 +147,35 @@
   <p class="hint" id="view-hint">Pince ou molette pour zoomer · glisse pour déplacer · double-clic pour agrandir</p>
 </div>
 
+<!-- Import : ce que le fichier contient, et ce qu'on veut en faire -->
+<div id="importmodal" class="hidden">
+  <div class="sheet">
+    <h2 id="import-titre">Importer ce fichier</h2>
+    <p class="hint" id="import-resume"></p>
+
+    <div id="import-choix">
+      <button type="button" id="import-ajouter" class="gros">
+        <span class="quoi">Ajouter à ma frise</span>
+        <span class="pourquoi" id="import-ajouter-detail"></span>
+      </button>
+      <button type="button" id="import-remplacer" class="gros rouge">
+        <span class="quoi">Effacer ma frise et la remplacer</span>
+        <span class="pourquoi" id="import-remplacer-detail"></span>
+      </button>
+    </div>
+
+    <div id="import-confirme" class="hidden">
+      <p class="avertit" id="import-avertit"></p>
+    </div>
+
+    <div class="actions">
+      <div class="spacer"></div>
+      <button type="button" id="import-annuler">Annuler</button>
+      <button type="button" id="import-vraiment" class="danger hidden">Oui, tout effacer</button>
+    </div>
+  </div>
+</div>
+
 <!-- Voyage : page plein écran pour composer ce qu'on veut voir -->
 <div id="voyage" class="hidden">
   <div class="vghead">
@@ -246,14 +275,14 @@
 
 <div id="toast" class="hidden"></div>
 
-<script src="src/seed.js?v=56"></script>
-<script src="src/refs.js?v=56"></script>
-<script src="src/places.js?v=56"></script>
-<script src="src/maps.js?v=56"></script>
-<script src="src/photos.js?v=56"></script>
-<script src="src/store.js?v=56"></script>
-<script src="src/timeline.js?v=56"></script>
-<script src="src/ui.js?v=56"></script>
+<script src="src/seed.js?v=57"></script>
+<script src="src/refs.js?v=57"></script>
+<script src="src/places.js?v=57"></script>
+<script src="src/maps.js?v=57"></script>
+<script src="src/photos.js?v=57"></script>
+<script src="src/store.js?v=57"></script>
+<script src="src/timeline.js?v=57"></script>
+<script src="src/ui.js?v=57"></script>
 <script>
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   navigator.serviceWorker.register('sw.js').catch(function(){});
