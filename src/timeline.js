@@ -268,8 +268,14 @@ var Timeline = (function () {
     requestDraw();
   }
 
+  /* La couleur vient de la sous-catégorie quand il y en a une. */
+  function couleur(ev) {
+    return Store.category(ev.sub || ev.cat).color;
+  }
+
   function visible(ev) {
     if (hiddenCats[ev.cat]) return false;
+    if (ev.sub && hiddenCats[ev.sub]) return false;
     return true;
   }
   function matched(ev) {
@@ -308,7 +314,7 @@ var Timeline = (function () {
       if (hiddenCats[p.cat]) return;
       var y1 = yearToY(p.start), y2 = yearToY(p.end);
       if (y2 < 0 || y1 > H) return;
-      var col = Store.category(p.cat).color;
+      var col = couleur(p);
       ctx.fillStyle = withAlpha(col, i % 2 ? 0.16 : 0.10);
       ctx.fillRect(0, y1, W, y2 - y1);
       ctx.strokeStyle = withAlpha(col, 0.55);
@@ -431,7 +437,7 @@ var Timeline = (function () {
       if (y2 < -40 || y1 > H + 40) return;
       var x = L.laneX + p._lane * L.pitch;
       if (x + L.laneW > maxLaneX + L.laneW) return;
-      var col = Store.category(p.cat).color;
+      var col = couleur(p);
       var dim = !matched(p);
       var top = Math.max(y1, -20), bot = Math.min(y2, H + 20);
 
@@ -511,7 +517,7 @@ var Timeline = (function () {
       if (!visible(p)) return;
       var py = yearToY(p.start);
       if (py < -30 || py > H + 30) return;
-      var col = Store.category(p.cat).color;
+      var col = couleur(p);
 
       /* Le libellé descend juste ce qu'il faut pour ne pas toucher le
          précédent, mais jamais de plus de MAX_SHIFT : au-delà on ne garde que

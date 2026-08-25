@@ -8,9 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Kronos">
 <title>Kronos — Frise chronologique</title>
-<link rel="manifest" href="manifest.webmanifest?v=46">
+<link rel="manifest" href="manifest.webmanifest?v=48">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="src/style.css?v=46">
+<link rel="stylesheet" href="src/style.css?v=48">
 </head>
 <body>
 
@@ -72,6 +72,9 @@
         <select name="cat"></select>
         <button type="button" id="form-cats" title="Gérer les catégories">Gérer…</button>
       </span>
+    </label>
+    <label id="form-sub-bloc" class="hidden">Sous-catégorie <span class="hint">(optionnel)</span>
+      <select name="sub"></select>
     </label>
     <label>Description <span class="hint">(optionnel)</span>
       <textarea name="desc" rows="10" maxlength="50000" placeholder="Notes, sources, détails…&#10;Colle un lien : https://… ou [texte du lien](https://…)"></textarea>
@@ -172,14 +175,14 @@
 
 <div id="toast" class="hidden"></div>
 
-<script src="src/seed.js?v=46"></script>
-<script src="src/refs.js?v=46"></script>
-<script src="src/places.js?v=46"></script>
-<script src="src/maps.js?v=46"></script>
-<script src="src/photos.js?v=46"></script>
-<script src="src/store.js?v=46"></script>
-<script src="src/timeline.js?v=46"></script>
-<script src="src/ui.js?v=46"></script>
+<script src="src/seed.js?v=48"></script>
+<script src="src/refs.js?v=48"></script>
+<script src="src/places.js?v=48"></script>
+<script src="src/maps.js?v=48"></script>
+<script src="src/photos.js?v=48"></script>
+<script src="src/store.js?v=48"></script>
+<script src="src/timeline.js?v=48"></script>
+<script src="src/ui.js?v=48"></script>
 <script>
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   navigator.serviceWorker.register('sw.js').catch(function(){});

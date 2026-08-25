@@ -1,6 +1,6 @@
 /* Kronos — interface : panneau, formulaire, recherche, import/export */
 (function () {
-  var VERSION = "5.5";
+  var VERSION = "5.6";
   var $ = function (id) { return document.getElementById(id); };
 
   var panel = $("panel"), panelBody = $("panel-body");
@@ -90,7 +90,7 @@
         (Timeline.isCatHidden(ev.cat) ? 'Réafficher cette catégorie sur la frise'
                                       : 'Masquer cette catégorie sur la frise') +
         '"><span class="dot" style="background:' + cat.color + '"></span>' +
-        esc(cat.label) + '</span></p>' +
+        esc(cat.label) + '</span>' + pastilleSous(ev) + '</p>' +
       ligneColonne(ev) +
       (ev.desc
         ? '<div class="descbox"><p class="desc">' + renderDesc(ev) + '</p></div>' +
@@ -136,6 +136,13 @@
       if (act === "choosemap") openChoose(ev.id);
       if (act === "addphoto") pickPhotos(ev.id);
       if (act === "read") openRead(ev);
+      if (act === "togglesub" && ev.sub) {
+        var cache = !Timeline.isCatHidden(ev.sub);
+        Timeline.setCatHidden(ev.sub, cache);
+        showDetail(ev.id);
+        say(cache ? 'Sous-catégorie « ' + Store.category(ev.sub).label + ' » masquée'
+                  : 'Sous-catégorie « ' + Store.category(ev.sub).label + ' » réaffichée');
+      }
       if (act === "togglecat") {
         var masquee = !Timeline.isCatHidden(ev.cat);
         Timeline.setCatHidden(ev.cat, masquee);
@@ -222,10 +229,15 @@
                esc(Timeline.fmtYearLong(oldest)) + '</p>';
 
     html += '<h3>Catégories</h3><div class="chips">';
-    Store.categories().forEach(function (c) {
+    Store.topCategories().forEach(function (c) {
       var off = Timeline.isCatHidden(c.id) ? " off" : "";
       html += '<span class="chip' + off + '" data-cat="' + c.id + '">' +
               '<span class="dot" style="background:' + c.color + '"></span>' + esc(c.label) + '</span>';
+      Store.subCategories(c.id).forEach(function (sc) {
+        var offs = Timeline.isCatHidden(sc.id) ? " off" : "";
+        html += '<span class="chip sous' + offs + '" data-cat="' + sc.id + '">' +
+                '<span class="dot" style="background:' + sc.color + '"></span>' + esc(sc.label) + '</span>';
+      });
     });
     html += '</div>';
     html += '<p class="stat" style="margin-top:8px">Touche une catégorie pour la masquer sur la frise.</p>' +
@@ -424,7 +436,7 @@
     var sel = form.elements.cat;
     var previous = sel.value;
     sel.innerHTML = "";
-    Store.categories().forEach(function (c) {
+    Store.topCategories().forEach(function (c) {
       var o = document.createElement("option");
       o.value = c.id; o.textContent = c.label;
       sel.appendChild(o);
@@ -433,10 +445,41 @@
     if (!sel.value && sel.options.length) sel.selectedIndex = 0;
   }
 
+  /* La liste des sous-catégories suit la catégorie choisie ; elle disparaît
+     quand la catégorie n'en a aucune. */
+  function fillSubs(garder) {
+    var sel = form.elements.sub;
+    var bloc = $("form-sub-bloc");
+    var liste = Store.subCategories(form.elements.cat.value);
+    sel.innerHTML = "";
+    var vide = document.createElement("option");
+    vide.value = ""; vide.textContent = "— aucune —";
+    sel.appendChild(vide);
+    liste.forEach(function (c) {
+      var o = document.createElement("option");
+      o.value = c.id; o.textContent = c.label;
+      sel.appendChild(o);
+    });
+    bloc.classList.toggle("hidden", liste.length === 0);
+    sel.value = (garder && liste.some(function (c) { return c.id === garder; })) ? garder : "";
+  }
+
   /* ---------- éditeur de catégories ---------- */
 
   var PALETTE = ["#e0605a", "#e08a4a", "#d4a24c", "#8fbf5a", "#58c2a8",
                  "#6f9fe0", "#8f8ae0", "#c08ae0", "#e5a0c4", "#9aa4b5"];
+
+  /* Éclaircit une couleur : une sous-catégorie naît dans le ton de sa mère,
+     libre ensuite d'être recolorée. */
+  function eclaircir(hex, k) {
+    var h = String(hex).replace("#", "");
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    var n = parseInt(h, 16);
+    if (isNaN(n)) return hex;
+    function m(v) { return Math.round(v + (255 - v) * k); }
+    var r = m((n >> 16) & 255), g = m((n >> 8) & 255), b = m(n & 255);
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
 
   function freeColor() {
     var used = {};
@@ -445,17 +488,23 @@
     return PALETTE[Math.floor(Math.random() * PALETTE.length)];
   }
 
+  function ligneCat(c, sous) {
+    var n = sous ? Store.countInSub(c.id) : Store.countInCategory(c.id);
+    return '<div class="catrow' + (sous ? ' sous' : '') + '">' +
+      '<input type="color" value="' + escAttr(c.color) + '" data-id="' + escAttr(c.id) + '" data-f="color">' +
+      '<input type="text" value="' + escAttr(c.label) + '" data-id="' + escAttr(c.id) + '" data-f="label" maxlength="40">' +
+      '<span class="count" title="' + n + ' événement(s)">' + n + '</span>' +
+      (sous ? '' : '<button type="button" class="plus" data-sous="' + escAttr(c.id) +
+                   '" title="Ajouter une sous-catégorie">+</button>') +
+      '<button type="button" class="del" data-id="' + escAttr(c.id) + '" title="Supprimer">✕</button>' +
+      '</div>';
+  }
+
   function renderCats() {
-    var cats = Store.categories();
     var html = "";
-    cats.forEach(function (c) {
-      var n = Store.countInCategory(c.id);
-      html += '<div class="catrow">' +
-        '<input type="color" value="' + escAttr(c.color) + '" data-id="' + escAttr(c.id) + '" data-f="color">' +
-        '<input type="text" value="' + escAttr(c.label) + '" data-id="' + escAttr(c.id) + '" data-f="label" maxlength="40">' +
-        '<span class="count" title="' + n + ' événement(s)">' + n + '</span>' +
-        (cats.length > 1 ? '<button type="button" class="del" data-id="' + escAttr(c.id) + '" title="Supprimer">✕</button>' : '') +
-        '</div>';
+    Store.topCategories().forEach(function (c) {
+      html += ligneCat(c, false);
+      Store.subCategories(c.id).forEach(function (sc) { html += ligneCat(sc, true); });
     });
     catList.innerHTML = html;
   }
@@ -485,16 +534,43 @@
   });
 
   catList.addEventListener("click", function (e) {
+    var plus = e.target.closest ? e.target.closest("[data-sous]") : null;
+    if (plus) {
+      var mere = Store.category(plus.getAttribute("data-sous"));
+      var nom = prompt('Nom de la sous-catégorie de « ' + mere.label + ' » :', "");
+      if (nom === null) return;
+      nom = nom.trim();
+      if (!nom) { say("Il faut un nom"); return; }
+      var sc = Store.addCategory(nom, eclaircir(mere.color, 0.28), mere.id);
+      renderCats();
+      var champ = catList.querySelector('input[type="text"][data-id="' + sc.id + '"]');
+      if (champ) { champ.focus(); champ.select(); }
+      return;
+    }
+
     var btn = e.target.closest ? e.target.closest(".del") : null;
     if (!btn) return;
     var id = btn.getAttribute("data-id");
     var cat = Store.category(id);
-    var n = Store.countInCategory(id);
-    var others = Store.categories().filter(function (c) { return c.id !== id; });
-    var msg = 'Supprimer la catégorie « ' + cat.label + ' » ?';
-    if (n > 0) msg += '\n\nSes ' + n + ' événement(s) passeront dans « ' + others[0].label + ' ».';
-    if (!confirm(msg)) return;
-    Store.removeCategory(id, others[0].id);
+
+    if (cat.parent) {
+      var ns = Store.countInSub(id);
+      var m1 = 'Supprimer la sous-catégorie « ' + cat.label + ' » ?';
+      if (ns > 0) m1 += '\n\nSes ' + ns + ' événement(s) resteront dans « ' +
+                        Store.category(cat.parent).label + ' », sans précision.';
+      if (!confirm(m1)) return;
+      Store.removeCategory(id);
+    } else {
+      var n = Store.countInCategory(id);
+      var filles = Store.subCategories(id).length;
+      var autres = Store.topCategories().filter(function (c) { return c.id !== id; });
+      if (!autres.length) { say("Il faut garder au moins une catégorie"); return; }
+      var m2 = 'Supprimer la catégorie « ' + cat.label + ' » ?';
+      if (filles) m2 += '\n\nSes ' + filles + ' sous-catégorie(s) seront supprimées aussi.';
+      if (n > 0) m2 += '\n\nSes ' + n + ' événement(s) passeront dans « ' + autres[0].label + ' ».';
+      if (!confirm(m2)) return;
+      Store.removeCategory(id, autres[0].id);
+    }
     renderCats();
     Timeline.rebuild();
   });
@@ -527,6 +603,7 @@
   function openForm(ev, presetYear) {
     fillCategories();
     fillMonths();
+    form.elements.cat.onchange = function () { fillSubs(null); };
     editingId = ev ? ev.id : null;
     formTitle.textContent = ev ? "Modifier l'événement" : "Nouvel événement";
     form.elements.title.value = ev ? ev.title : "";
@@ -539,6 +616,7 @@
     form.elements.approxStart.checked = ev ? !!ev.approxStart : false;
     form.elements.approxEnd.checked = ev ? !!ev.approxEnd : false;
     form.elements.cat.value = ev ? ev.cat : "perso";
+    fillSubs(ev ? ev.sub : null);
     form.elements.desc.value = ev ? ev.desc : "";
     majCompteur();
     formDelete.classList.toggle("hidden", !ev);
@@ -560,6 +638,7 @@
       as: form.elements.approxStart.checked ? 1 : 0,
       ae: form.elements.approxEnd.checked ? 1 : 0,
       c: form.elements.cat.value,
+      sc: form.elements.sub.value || null,
       d: form.elements.desc.value.trim()
     };
     if (!data.t) { say("Il faut un titre"); return; }
@@ -587,6 +666,17 @@
   });
   $("form-cancel").addEventListener("click", closeForm);
   modal.addEventListener("click", function (e) { if (e.target === modal) closeForm(); });
+
+  /* Pastille de sous-catégorie, quand l'événement en porte une. */
+  function pastilleSous(ev) {
+    if (!ev.sub) return "";
+    var sc = Store.category(ev.sub);
+    var off = Timeline.isCatHidden(ev.sub);
+    return ' <span class="chip sous' + (off ? ' off' : '') + '" data-act="togglesub" title="' +
+      (off ? 'Réafficher cette sous-catégorie' : 'Masquer cette sous-catégorie') +
+      '"><span class="dot" style="background:' + sc.color + '"></span>' +
+      esc(sc.label) + '</span>';
+  }
 
   /* ---------- ordre entre événements de même date ---------- */
 

@@ -80,6 +80,8 @@ var Store = (function () {
       mapX: num(raw.mx !== undefined ? raw.mx : raw.mapX),
       mapY: num(raw.my !== undefined ? raw.my : raw.mapY),
       cat: raw.c || raw.cat || "perso",
+      /* sous-catégorie, forcément fille de `cat` ; null si aucune */
+      sub: (raw.sc !== undefined ? raw.sc : raw.sub) || null,
       desc: String(raw.d || raw.desc || "")
     };
   }
@@ -300,15 +302,43 @@ var Store = (function () {
     countInCategory: function (id) {
       return state.events.filter(function (ev) { return ev.cat === id; }).length;
     },
-    addCategory: function (label, color) {
+    addCategory: function (label, color, parent) {
       var cat = {
         id: catSlug(label || "Nouvelle catégorie"),
         label: String(label || "Nouvelle catégorie").trim() || "Nouvelle catégorie",
         color: color || "#9aa4b5"
       };
+      if (parent) cat.parent = parent;
       state.categories.push(cat);
       save();
       return cat;
+    },
+
+    /* Catégories de premier niveau, dans l'ordre du fichier. */
+    topCategories: function () {
+      return state.categories.filter(function (c) { return !c.parent; });
+    },
+
+    /* Sous-catégories d'une catégorie donnée. */
+    subCategories: function (parentId) {
+      return state.categories.filter(function (c) { return c.parent === parentId; });
+    },
+
+    /* Nombre d'événements portant cette sous-catégorie. */
+    countInSub: function (id) {
+      return state.events.filter(function (ev) { return ev.sub === id; }).length;
+    },
+
+    /* Rattache un événement à une sous-catégorie (ou la retire avec null). */
+    setSub: function (id, sub) {
+      for (var i = 0; i < state.events.length; i++) {
+        if (state.events[i].id === id) {
+          state.events[i].sub = sub || null;
+          save();
+          return state.events[i];
+        }
+      }
+      return null;
     },
     updateCategory: function (id, label, color) {
       for (var i = 0; i < state.categories.length; i++) {
@@ -324,14 +354,37 @@ var Store = (function () {
     },
     /* Supprime une catégorie et réaffecte ses événements à `fallbackId`. */
     removeCategory: function (id, fallbackId) {
-      if (state.categories.length <= 1) return false;
+      var cible = null, i;
+      for (i = 0; i < state.categories.length; i++)
+        if (state.categories[i].id === id) cible = state.categories[i];
+      if (!cible) return false;
+
+      if (cible.parent) {
+        /* sous-catégorie : les événements concernés perdent seulement la
+           précision, ils restent dans la catégorie mère */
+        state.events.forEach(function (ev) { if (ev.sub === id) ev.sub = null; });
+        state.categories = state.categories.filter(function (c) { return c.id !== id; });
+        save();
+        return true;
+      }
+
+      var meres = state.categories.filter(function (c) { return !c.parent; });
+      if (meres.length <= 1) return false;
       var fb = fallbackId;
       if (!fb || fb === id) {
-        for (var i = 0; i < state.categories.length; i++)
-          if (state.categories[i].id !== id) { fb = state.categories[i].id; break; }
+        for (i = 0; i < meres.length; i++)
+          if (meres[i].id !== id) { fb = meres[i].id; break; }
       }
-      state.events.forEach(function (ev) { if (ev.cat === id) ev.cat = fb; });
-      state.categories = state.categories.filter(function (c) { return c.id !== id; });
+      /* la catégorie emporte ses sous-catégories */
+      var filles = {};
+      state.categories.forEach(function (c) { if (c.parent === id) filles[c.id] = true; });
+      state.events.forEach(function (ev) {
+        if (ev.cat === id) { ev.cat = fb; ev.sub = null; }
+        else if (ev.sub && filles[ev.sub]) ev.sub = null;
+      });
+      state.categories = state.categories.filter(function (c) {
+        return c.id !== id && c.parent !== id;
+      });
       save();
       return true;
     },

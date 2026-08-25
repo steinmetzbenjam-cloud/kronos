@@ -434,3 +434,18 @@ code{background:var(--bg);padding:1px 5px;border-radius:5px;font-size:12px}
 #form .compteur{font-size:12px;color:var(--txt-dim);text-align:right;margin-top:-4px}
 #form .compteur.plein{color:var(--danger)}
 #panel .stat.alerte{color:var(--danger)}
+
+/* ---------- Sous-catégories ---------- */
+.catrow.sous{margin-left:26px;position:relative}
+.catrow.sous::before{
+  content:"";position:absolute;left:-15px;top:50%;width:11px;height:1px;
+  background:var(--line);
+}
+.catrow .plus{
+  flex:0 0 auto;border:none;background:transparent;color:var(--txt-dim);
+  font-size:19px;line-height:1;padding:4px 6px;min-height:0;
+}
+.catrow .plus:active{color:var(--accent)}
+#panel .chip.sous .dot{width:7px;height:7px}
+.chip.sous{font-size:12px;padding:4px 9px;opacity:.92}
+.chip.sous .dot{width:7px;height:7px}

@@ -166,6 +166,27 @@ Dans le menu, toucher une pastille de catégorie la **masque sur la frise**
 sans rien supprimer — pratique pour n'afficher que les guerres, ou tout
 sauf elles.
 
+### Sous-catégories
+
+Le bouton **+** au bout d'une ligne de l'éditeur crée une **sous-catégorie**.
+Elle apparaît en retrait sous sa mère, avec sa propre couleur — proposée dans
+le ton de la catégorie, libre d'être changée.
+
+Dans le formulaire d'un événement, un second menu **Sous-catégorie** apparaît
+dès que la catégorie choisie en possède ; il reste facultatif et disparaît si
+la catégorie n'en a aucune.
+
+**Les barres et les points prennent la couleur de la sous-catégorie** quand il
+y en a une, celle de la catégorie sinon.
+
+Le filtrage fonctionne aux deux niveaux : masquer une sous-catégorie ne touche
+qu'elle, masquer la catégorie mère emporte toutes ses filles. La fiche d'un
+événement affiche les deux pastilles, l'une et l'autre cliquables.
+
+Supprimer une sous-catégorie laisse ses événements dans la catégorie mère, sans
+précision. Supprimer une catégorie emporte ses sous-catégories, et ses
+événements basculent dans une autre catégorie — rien n'est perdu.
+
 ---
 
 ## Références bibliques cliquables
