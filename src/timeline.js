@@ -601,8 +601,12 @@ var Timeline = (function () {
       ctx.fillText(yl, colX, ly);
       var wy = ctx.measureText(yl).width;
       var tx = colX + wy + 10;
+      /* Le titre garde sa couleur même sélectionné : un événement qu'on vient
+         de créer est sélectionné d'office, et c'est justement là qu'on veut
+         voir sa catégorie. La sélection se lit au gras, à l'année en blanc et
+         au cercle blanc autour du point. */
       ctx.font = (sel ? "600 " : "") + "12.5px " + FONT;
-      ctx.fillStyle = sel ? "#ffffff" : lisible(col);
+      ctx.fillStyle = lisible(col);
       ctx.fillText(couper(p.title, W - tx - 12), tx, ly);
       ctx.globalAlpha = 1;
 
