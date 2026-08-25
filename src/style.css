@@ -6,7 +6,6 @@
   --txt:#e7ecf3;
   --txt-dim:#8d97a8;
   --accent:#e0b25a;
-  --accent-2:#6aa9e0;
   --danger:#e0605a;
   --radius:10px;
   --topbar-h:52px;
@@ -452,14 +451,6 @@ code{background:var(--bg);padding:1px 5px;border-radius:5px;font-size:12px}
 .chip.sous .dot{width:7px;height:7px}
 
 /* ---------- Bouton et fenêtre « cadrer une catégorie » ---------- */
-/* Teinté de bleu : repérable d'un coup d'œil sans concurrencer
-   le doré de « + Événement », qui reste l'action principale. */
-#btn-cat{
-  background:rgba(106,169,224,.17);
-  border-color:rgba(106,169,224,.6);
-  color:var(--accent-2);font-weight:600;
-}
-#btn-cat:active{background:rgba(106,169,224,.34);border-color:var(--accent-2)}
 #btn-cat .ico{display:none}
 @media (max-width:620px){
   #btn-cat .lbl{display:none}
