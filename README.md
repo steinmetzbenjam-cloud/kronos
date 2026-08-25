@@ -166,9 +166,9 @@ Dans le menu, toucher une pastille de catégorie la **masque sur la frise**
 sans rien supprimer — pratique pour n'afficher que les guerres, ou tout
 sauf elles.
 
-### Voyage
+### Thèmes
 
-Le bouton **Voyage**, en vert à gauche de « Catégorie », ouvre une page pleine
+Le bouton **Thèmes**, en vert à gauche de « Catégorie », ouvre une page pleine
 qui sert à composer ce qu'on veut voir. Elle offre trois entrées.
 
 **Les grands thèmes** rassemblent plusieurs catégories sous un nom. Ouvrir

@@ -8,9 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Kronos">
 <title>Kronos — Frise chronologique</title>
-<link rel="manifest" href="manifest.webmanifest?v=57">
+<link rel="manifest" href="manifest.webmanifest?v=58">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="src/style.css?v=57">
+<link rel="stylesheet" href="src/style.css?v=58">
 </head>
 <body>
 
@@ -24,7 +24,7 @@
   <button id="btn-zoom-out" class="icon" title="Dézoomer">−</button>
   <button id="btn-zoom-in" class="icon" title="Zoomer">+</button>
   <button id="btn-fit" class="icon" title="Tout voir">⤢</button>
-  <button id="btn-voyage" title="Voyage : choisir ce qui s'affiche"><span class="lbl">Voyage</span><span class="ico">✦</span></button>
+  <button id="btn-voyage" title="Thèmes : choisir ce qui s'affiche"><span class="lbl">Thèmes</span><span class="ico">✦</span></button>
   <button id="btn-cat" title="Cadrer une catégorie"><span class="lbl">Catégorie</span><span class="ico">◍</span></button>
   <button id="btn-add" class="primary">+ Événement</button>
   <button id="btn-menu" class="icon" title="Menu">☰</button>
@@ -179,7 +179,7 @@
 <!-- Voyage : page plein écran pour composer ce qu'on veut voir -->
 <div id="voyage" class="hidden">
   <div class="vghead">
-    <span class="vgtitre">Voyage</span>
+    <span class="vgtitre">Thèmes</span>
     <span id="vg-etat" class="vgetat"></span>
     <div class="spacer"></div>
     <button type="button" id="vg-tout">Tout afficher</button>
@@ -275,14 +275,14 @@
 
 <div id="toast" class="hidden"></div>
 
-<script src="src/seed.js?v=57"></script>
-<script src="src/refs.js?v=57"></script>
-<script src="src/places.js?v=57"></script>
-<script src="src/maps.js?v=57"></script>
-<script src="src/photos.js?v=57"></script>
-<script src="src/store.js?v=57"></script>
-<script src="src/timeline.js?v=57"></script>
-<script src="src/ui.js?v=57"></script>
+<script src="src/seed.js?v=58"></script>
+<script src="src/refs.js?v=58"></script>
+<script src="src/places.js?v=58"></script>
+<script src="src/maps.js?v=58"></script>
+<script src="src/photos.js?v=58"></script>
+<script src="src/store.js?v=58"></script>
+<script src="src/timeline.js?v=58"></script>
+<script src="src/ui.js?v=58"></script>
 <script>
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   navigator.serviceWorker.register('sw.js').catch(function(){});

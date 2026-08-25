@@ -1,6 +1,6 @@
 /* Kronos — interface : panneau, formulaire, recherche, import/export */
 (function () {
-  var VERSION = "6.5";
+  var VERSION = "6.6";
   var $ = function (id) { return document.getElementById(id); };
 
   var panel = $("panel"), panelBody = $("panel-body");
@@ -1521,7 +1521,7 @@
       vgEtat.classList.remove("hidden");
     } else {
       btn.classList.remove("actif");
-      btn.querySelector(".lbl").textContent = "Voyage";
+      btn.querySelector(".lbl").textContent = "Thèmes";
       vgEtat.textContent = "";
       vgEtat.classList.add("hidden");
     }
