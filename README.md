@@ -187,8 +187,14 @@ Dans le formulaire d'un événement, un second menu **Sous-catégorie** apparaî
 dès que la catégorie choisie en possède ; il reste facultatif et disparaît si
 la catégorie n'en a aucune.
 
-**Les barres et les points prennent la couleur de la sous-catégorie** quand il
-y en a une, celle de la catégorie sinon.
+**Les barres, les points et le titre des événements prennent la couleur de la
+sous-catégorie** quand il y en a une, celle de la catégorie sinon.
+
+Sur le titre, une teinte trop sombre pour le fond de la frise est remontée vers
+le blanc juste assez pour rester lisible ; sa teinte reste reconnaissable, et
+les pastilles comme les barres gardent la couleur exacte de la catégorie.
+L'année, elle, garde son doré : c'est la colonne des dates, son uniformité est
+ce qui la rend lisible d'un coup d'œil.
 
 Le filtrage fonctionne aux deux niveaux : masquer une sous-catégorie ne touche
 qu'elle, masquer la catégorie mère emporte toutes ses filles. La fiche d'un

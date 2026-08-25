@@ -273,6 +273,31 @@ var Timeline = (function () {
     return Store.category(ev.sub || ev.cat).color;
   }
 
+  /* Un libellé écrit dans la couleur de sa catégorie doit rester lisible sur
+     le fond sombre, y compris pour les teintes foncées de la palette
+     (« Époques », « Empires »). On remonte donc la couleur vers le blanc
+     jusqu'à un plancher de clarté, en gardant sa teinte reconnaissable.
+     Le résultat est mémorisé : la frise se redessine à chaque geste. */
+  var MIN_CLARTE = 0.55;
+  var clairCache = {};
+  function lisible(hex) {
+    if (clairCache[hex]) return clairCache[hex];
+    var h = String(hex).replace("#", "");
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    var n = parseInt(h, 16);
+    if (isNaN(n) || h.length !== 6) return hex;
+    var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    var clarte = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    var out = hex;
+    if (clarte < MIN_CLARTE) {
+      var k = (MIN_CLARTE - clarte) / (1 - clarte);
+      var m = function (v) { return Math.round(v + (255 - v) * k); };
+      out = "#" + ((1 << 24) + (m(r) << 16) + (m(g) << 8) + m(b)).toString(16).slice(1);
+    }
+    clairCache[hex] = out;
+    return out;
+  }
+
   function visible(ev) {
     if (hiddenCats[ev.cat]) return false;
     if (ev.sub && hiddenCats[ev.sub]) return false;
@@ -577,7 +602,7 @@ var Timeline = (function () {
       var wy = ctx.measureText(yl).width;
       var tx = colX + wy + 10;
       ctx.font = (sel ? "600 " : "") + "12.5px " + FONT;
-      ctx.fillStyle = sel ? "#ffffff" : "#dbe2ec";
+      ctx.fillStyle = sel ? "#ffffff" : lisible(col);
       ctx.fillText(couper(p.title, W - tx - 12), tx, ly);
       ctx.globalAlpha = 1;
 
