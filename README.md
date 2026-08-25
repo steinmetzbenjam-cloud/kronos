@@ -196,6 +196,11 @@ les pastilles comme les barres gardent la couleur exacte de la catégorie.
 L'année, elle, garde son doré : c'est la colonne des dates, son uniformité est
 ce qui la rend lisible d'un coup d'œil.
 
+Un événement **sélectionné garde la couleur de sa catégorie** : il vient
+souvent d'être créé, et c'est justement le moment où l'on veut vérifier son
+rattachement. La sélection se lit au gras du titre, à l'année passée en blanc
+et au cercle blanc autour du point.
+
 Le filtrage fonctionne aux deux niveaux : masquer une sous-catégorie ne touche
 qu'elle, masquer la catégorie mère emporte toutes ses filles. La fiche d'un
 événement affiche les deux pastilles, l'une et l'autre cliquables.
