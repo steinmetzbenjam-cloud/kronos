@@ -1,6 +1,6 @@
 /* Kronos — interface : panneau, formulaire, recherche, import/export */
 (function () {
-  var VERSION = "5.7";
+  var VERSION = "5.8";
   var $ = function (id) { return document.getElementById(id); };
 
   var panel = $("panel"), panelBody = $("panel-body");
