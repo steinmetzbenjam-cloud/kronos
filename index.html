@@ -8,9 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Kronos">
 <title>Kronos — Frise chronologique</title>
-<link rel="manifest" href="manifest.webmanifest?v=52">
+<link rel="manifest" href="manifest.webmanifest?v=53">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="src/style.css?v=52">
+<link rel="stylesheet" href="src/style.css?v=53">
 </head>
 <body>
 
@@ -24,6 +24,7 @@
   <button id="btn-zoom-out" class="icon" title="Dézoomer">−</button>
   <button id="btn-zoom-in" class="icon" title="Zoomer">+</button>
   <button id="btn-fit" class="icon" title="Tout voir">⤢</button>
+  <button id="btn-voyage" title="Voyage : choisir ce qui s'affiche"><span class="lbl">Voyage</span><span class="ico">✦</span></button>
   <button id="btn-cat" title="Cadrer une catégorie"><span class="lbl">Catégorie</span><span class="ico">◍</span></button>
   <button id="btn-add" class="primary">+ Événement</button>
   <button id="btn-menu" class="icon" title="Menu">☰</button>
@@ -146,6 +147,61 @@
   <p class="hint" id="view-hint">Pince ou molette pour zoomer · glisse pour déplacer · double-clic pour agrandir</p>
 </div>
 
+<!-- Voyage : page plein écran pour composer ce qu'on veut voir -->
+<div id="voyage" class="hidden">
+  <div class="vghead">
+    <span class="vgtitre">Voyage</span>
+    <span id="vg-etat" class="vgetat"></span>
+    <div class="spacer"></div>
+    <button type="button" id="vg-tout">Tout afficher</button>
+    <button type="button" id="vg-close" class="primary">Fermer</button>
+  </div>
+  <div id="vgcorps">
+    <section class="vgsect">
+      <h3>Grands thèmes</h3>
+      <p class="hint">Un thème rassemble plusieurs catégories. L'ouvrir n'affiche
+        qu'elles, et cadre la période qu'elles couvrent.</p>
+      <div id="vg-themes" class="vggrille"></div>
+    </section>
+
+    <section class="vgsect">
+      <h3>Périodes</h3>
+      <p class="hint">Les grandes durées de ta frise. Une période cadre la vue
+        sans rien masquer.</p>
+      <div id="vg-periodes" class="vgliste"></div>
+    </section>
+
+    <section class="vgsect">
+      <h3>Catégories</h3>
+      <p class="hint">N'afficher qu'une catégorie ou qu'une sous-catégorie,
+        et s'y rendre.</p>
+      <div id="vg-cats" class="vgliste"></div>
+    </section>
+  </div>
+</div>
+
+<!-- Créer ou modifier un grand thème -->
+<div id="thememodal" class="hidden">
+  <form id="themeform">
+    <h2 id="themeform-titre">Nouveau thème</h2>
+    <label>Nom
+      <input name="label" required maxlength="60" placeholder="Ex. Les rois d'Israël">
+    </label>
+    <label>Couleur
+      <input name="color" type="color" class="couleur">
+    </label>
+    <p class="hint">Coche ce que ce thème rassemble. Cocher une catégorie mère
+      emporte toutes ses sous-catégories.</p>
+    <div id="themeform-cats"></div>
+    <div class="actions">
+      <button type="button" id="themeform-del" class="danger hidden">Supprimer</button>
+      <div class="spacer"></div>
+      <button type="button" id="themeform-cancel">Annuler</button>
+      <button type="submit" class="primary">Enregistrer</button>
+    </div>
+  </form>
+</div>
+
 <!-- Cadrer une catégorie ou une sous-catégorie -->
 <div id="catzoom" class="hidden">
   <div class="sheet">
@@ -189,14 +245,14 @@
 
 <div id="toast" class="hidden"></div>
 
-<script src="src/seed.js?v=52"></script>
-<script src="src/refs.js?v=52"></script>
-<script src="src/places.js?v=52"></script>
-<script src="src/maps.js?v=52"></script>
-<script src="src/photos.js?v=52"></script>
-<script src="src/store.js?v=52"></script>
-<script src="src/timeline.js?v=52"></script>
-<script src="src/ui.js?v=52"></script>
+<script src="src/seed.js?v=53"></script>
+<script src="src/refs.js?v=53"></script>
+<script src="src/places.js?v=53"></script>
+<script src="src/maps.js?v=53"></script>
+<script src="src/photos.js?v=53"></script>
+<script src="src/store.js?v=53"></script>
+<script src="src/timeline.js?v=53"></script>
+<script src="src/ui.js?v=53"></script>
 <script>
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   navigator.serviceWorker.register('sw.js').catch(function(){});

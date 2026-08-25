@@ -1,6 +1,6 @@
 /* Kronos — interface : panneau, formulaire, recherche, import/export */
 (function () {
-  var VERSION = "6.0";
+  var VERSION = "6.1";
   var $ = function (id) { return document.getElementById(id); };
 
   var panel = $("panel"), panelBody = $("panel-body");
@@ -1330,6 +1330,326 @@
   $("catzoom-close").addEventListener("click", closeCatZoom);
   catZoom.addEventListener("click", function (e) { if (e.target === catZoom) closeCatZoom(); });
 
+
+  /* ---------- Voyage : composer ce qu'on veut voir ---------- */
+
+  var voyage = $("voyage"), vgThemes = $("vg-themes"),
+      vgPeriodes = $("vg-periodes"), vgCats = $("vg-cats"), vgEtat = $("vg-etat");
+  var themeModal = $("thememodal"), themeForm = $("themeform"),
+      themeFormCats = $("themeform-cats");
+  var editingTheme = null;
+
+  /* Bornes et compte des événements d'une catégorie ou d'une sous-catégorie.
+     `etendue()` fait déjà ce travail pour le bouton Catégorie ; on la réutilise. */
+
+  /* Étendue de tout ce qu'un thème rassemble, sous-catégories comprises. */
+  function etendueTheme(t) {
+    var garde = {};
+    t.cats.forEach(function (c) { garde[c] = true; });
+    var a = Infinity, b = -Infinity, n = 0;
+    Store.all().forEach(function (ev) {
+      if (!(garde[ev.cat] || (ev.sub && garde[ev.sub]))) return;
+      n++;
+      if (ev.start < a) a = ev.start;
+      var fin = (ev.end !== null && ev.end !== undefined) ? ev.end : ev.start;
+      if (fin > b) b = fin;
+    });
+    return n ? { a: a, b: b, n: n } : null;
+  }
+
+  function motEvenements(n) {
+    return n + (n > 1 ? " événements" : " événement");
+  }
+
+  /* Applique un thème : la frise ne montre plus que lui, et s'y cale. */
+  function ouvrirTheme(t) {
+    Timeline.setTheme(t.cats);
+    var e = etendueTheme(t);
+    fermerVoyage();
+    closePanel();
+    if (e) Timeline.fitRange(e.a, e.b);
+    else Timeline.fitAll();
+    Timeline.rebuild();
+    majEtatVoyage();
+    say('« ' + t.label + ' » — ' + (e ? motEvenements(e.n) + ' affichés' : 'aucun événement'));
+  }
+
+  function toutAfficher() {
+    Timeline.setTheme(null);
+    Timeline.rebuild();
+    Timeline.fitAll();
+    majEtatVoyage();
+    renderVoyage();
+    say("Toute la frise est de nouveau visible");
+  }
+
+  /* Rappel discret, dans la page et sur le bouton, qu'un filtre est posé :
+     sans lui, une frise amputée passerait pour une frise vide. */
+  function majEtatVoyage() {
+    var ids = Timeline.themeIds();
+    var actif = null;
+    if (ids) {
+      var cle = ids.slice().sort().join("|");
+      Store.themes().forEach(function (t) {
+        if (t.cats.slice().sort().join("|") === cle) actif = t;
+      });
+    }
+    var btn = $("btn-voyage");
+    if (ids) {
+      btn.classList.add("actif");
+      btn.querySelector(".lbl").textContent = actif ? actif.label : "Sélection";
+      vgEtat.textContent = actif ? '« ' + actif.label +' » est ouvert'
+                                 : 'Une sélection est en cours';
+      vgEtat.classList.remove("hidden");
+    } else {
+      btn.classList.remove("actif");
+      btn.querySelector(".lbl").textContent = "Voyage";
+      vgEtat.textContent = "";
+      vgEtat.classList.add("hidden");
+    }
+    $("vg-tout").classList.toggle("hidden", !ids);
+  }
+
+  function carteTheme(t) {
+    var e = etendueTheme(t);
+    var ids = Timeline.themeIds();
+    var ouvert = ids && ids.slice().sort().join("|") === t.cats.slice().sort().join("|");
+    return '<div class="vgcarte' + (ouvert ? ' ouverte' : '') +
+      '" style="--teinte:' + escAttr(t.color) + '">' +
+      '<button type="button" class="vgcarte-go" data-theme="' + escAttr(t.id) + '">' +
+        '<span class="nom">' + esc(t.label) + '</span>' +
+        '<span class="meta">' + (e
+          ? motEvenements(e.n) + ' · ' + Timeline.fmtYearLong(Math.round(e.a)) +
+            ' → ' + Timeline.fmtYearLong(Math.round(e.b))
+          : 'aucun événement') + '</span>' +
+        '<span class="cats">' + (t.cats.length
+          ? t.cats.map(function (c) {
+              var cat = Store.category(c);
+              return '<span class="pastille" style="background:' + cat.color + '"></span>';
+            }).join("")
+          : '<span class="meta">aucune catégorie</span>') + '</span>' +
+      '</button>' +
+      '<button type="button" class="vgcarte-edit" data-edit="' + escAttr(t.id) +
+        '" title="Modifier ce thème" aria-label="Modifier ce thème">✎</button>' +
+      '</div>';
+  }
+
+  function renderThemes() {
+    var html = Store.themes().map(carteTheme).join("");
+    html += '<button type="button" id="vg-neuf" class="vgcarte vgneuf">' +
+            '<span class="plus">+</span><span class="nom">Nouveau thème</span>' +
+            '<span class="meta">Rassembler des catégories</span></button>';
+    vgThemes.innerHTML = html;
+  }
+
+  /* Les périodes de la frise : les événements qui ont une fin. Il y en a
+     souvent des centaines — les généalogies en fabriquent une par personne —
+     alors on montre d'abord les plus longues, celles qui structurent
+     vraiment la frise, et le reste sur demande. */
+  var PERIODES_VISIBLES = 12;
+  var toutesPeriodes = false;
+
+  function renderPeriodes() {
+    var liste = Store.all().filter(function (ev) {
+      return ev.end !== null && ev.end !== undefined;
+    });
+    if (!liste.length) {
+      vgPeriodes.innerHTML = '<p class="hint">Aucune période : donne une année ' +
+        'de fin à un événement pour qu’il en devienne une.</p>';
+      return;
+    }
+    var total = liste.length;
+    /* les plus longues d'abord, puis remises dans l'ordre du temps */
+    liste.sort(function (x, y) { return (y.end - y.start) - (x.end - x.start); });
+    if (!toutesPeriodes) liste = liste.slice(0, PERIODES_VISIBLES);
+    liste.sort(function (x, y) { return x.start - y.start; });
+
+    var reste = total - liste.length;
+    vgPeriodes.innerHTML = liste.map(function (ev) {
+      var col = Store.category(ev.sub || ev.cat).color;
+      var duree = Math.round(ev.end - ev.start);
+      return '<button type="button" class="vgrang" data-periode="' + escAttr(ev.id) + '">' +
+        '<span class="dot" style="background:' + col + '"></span>' +
+        '<span class="nom">' + esc(ev.title) + '</span>' +
+        '<span class="meta">' + Timeline.fmtYearLong(ev.startYear) + ' → ' +
+          Timeline.fmtYearLong(ev.endYear) + ' · ' + duree + ' an' +
+          (duree >= 2 ? 's' : '') + '</span></button>';
+    }).join("") + (reste > 0
+      ? '<button type="button" id="vg-plus" class="vgplus">Afficher les ' +
+        total + ' périodes</button>'
+      : (toutesPeriodes && total > PERIODES_VISIBLES
+        ? '<button type="button" id="vg-plus" class="vgplus">Ne garder que les plus longues</button>'
+        : ''));
+  }
+
+  function rangCat(c, sous) {
+    var e = etendue(c.id, sous);
+    return '<button type="button" class="vgrang' + (sous ? ' sous' : '') +
+      (e ? '' : ' vide') + '"' +
+      (e ? ' data-seul="' + escAttr(c.id) + '"' : ' disabled') + '>' +
+      '<span class="dot" style="background:' + c.color + '"></span>' +
+      '<span class="nom">' + esc(c.label) + '</span>' +
+      '<span class="meta">' + (e
+        ? motEvenements(e.n) + ' · ' + Timeline.fmtYearLong(Math.round(e.a)) +
+          ' → ' + Timeline.fmtYearLong(Math.round(e.b))
+        : 'aucun événement') + '</span></button>';
+  }
+
+  function renderVgCats() {
+    var html = "";
+    Store.topCategories().forEach(function (c) {
+      html += rangCat(c, false);
+      Store.subCategories(c.id).forEach(function (sc) { html += rangCat(sc, true); });
+    });
+    vgCats.innerHTML = html;
+  }
+
+  function renderVoyage() {
+    renderThemes();
+    renderPeriodes();
+    renderVgCats();
+  }
+
+  function ouvrirVoyage() {
+    renderVoyage();
+    majEtatVoyage();
+    voyage.classList.remove("hidden");
+  }
+  function fermerVoyage() { voyage.classList.add("hidden"); }
+
+  vgThemes.addEventListener("click", function (e) {
+    var cible = e.target.closest ? e.target : null;
+    if (!cible) return;
+    var edit = cible.closest("[data-edit]");
+    if (edit) { ouvrirEditeurTheme(Store.theme(edit.getAttribute("data-edit"))); return; }
+    var go = cible.closest("[data-theme]");
+    if (go) {
+      var t = Store.theme(go.getAttribute("data-theme"));
+      if (t) ouvrirTheme(t);
+      return;
+    }
+    if (cible.closest("#vg-neuf")) ouvrirEditeurTheme(null);
+  });
+
+  vgPeriodes.addEventListener("click", function (e) {
+    if (e.target.closest && e.target.closest("#vg-plus")) {
+      toutesPeriodes = !toutesPeriodes;
+      renderPeriodes();
+      return;
+    }
+    var b = e.target.closest ? e.target.closest("[data-periode]") : null;
+    if (!b) return;
+    var ev = Store.get(b.getAttribute("data-periode"));
+    if (!ev) return;
+    fermerVoyage();
+    Timeline.fitRange(ev.start, ev.end);
+    say('« ' + ev.title + ' » cadrée');
+  });
+
+  vgCats.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("[data-seul]") : null;
+    if (!b) return;
+    var id = b.getAttribute("data-seul");
+    var cat = Store.category(id);
+    var sous = !!cat.parent;
+    var e2 = etendue(id, sous);
+    Timeline.setTheme([id]);
+    Timeline.rebuild();
+    fermerVoyage();
+    closePanel();
+    if (e2) Timeline.fitRange(e2.a, e2.b);
+    majEtatVoyage();
+    say('« ' + cat.label + ' » seule — ' + (e2 ? motEvenements(e2.n) + ' affichés' : ''));
+  });
+
+  $("btn-voyage").addEventListener("click", ouvrirVoyage);
+  $("vg-close").addEventListener("click", fermerVoyage);
+  $("vg-tout").addEventListener("click", toutAfficher);
+
+  /* ---------- éditeur d'un grand thème ---------- */
+
+  function ligneChoix(c, sous, coches) {
+    var n = sous ? Store.countInSub(c.id) : Store.countInCategory(c.id);
+    return '<label class="vgcheck' + (sous ? ' sous' : '') + '">' +
+      '<input type="checkbox" value="' + escAttr(c.id) + '"' +
+        (coches[c.id] ? ' checked' : '') + '>' +
+      '<span class="dot" style="background:' + c.color + '"></span>' +
+      '<span class="nom">' + esc(c.label) + '</span>' +
+      '<span class="meta">' + motEvenements(n) + '</span></label>';
+  }
+
+  function ouvrirEditeurTheme(t) {
+    editingTheme = t;
+    var coches = {};
+    if (t) t.cats.forEach(function (c) { coches[c] = true; });
+    $("themeform-titre").textContent = t ? "Modifier le thème" : "Nouveau thème";
+    themeForm.elements.label.value = t ? t.label : "";
+    themeForm.elements.color.value = t ? t.color : freeThemeColor();
+    var html = "";
+    Store.topCategories().forEach(function (c) {
+      html += ligneChoix(c, false, coches);
+      Store.subCategories(c.id).forEach(function (sc) { html += ligneChoix(sc, true, coches); });
+    });
+    themeFormCats.innerHTML = html;
+    $("themeform-del").classList.toggle("hidden", !t);
+    themeModal.classList.remove("hidden");
+    setTimeout(function () { themeForm.elements.label.focus(); }, 30);
+  }
+  function fermerEditeurTheme() {
+    themeModal.classList.add("hidden");
+    editingTheme = null;
+  }
+
+  /* Une teinte verte encore libre, dans l'esprit du bouton Voyage. */
+  var VERTS = ["#58c2a8", "#8fbf5a", "#4fb98a", "#7bc47f", "#3fae94"];
+  function freeThemeColor() {
+    var pris = {};
+    Store.themes().forEach(function (t) { pris[String(t.color).toLowerCase()] = true; });
+    for (var i = 0; i < VERTS.length; i++) if (!pris[VERTS[i]]) return VERTS[i];
+    return VERTS[0];
+  }
+
+  themeForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var label = themeForm.elements.label.value.trim();
+    if (!label) { say("Il faut un nom"); return; }
+    var cats = [];
+    themeFormCats.querySelectorAll("input[type=checkbox]").forEach(function (b) {
+      if (b.checked) cats.push(b.value);
+    });
+    if (!cats.length) { say("Coche au moins une catégorie"); return; }
+    var color = themeForm.elements.color.value;
+    if (editingTheme) Store.updateTheme(editingTheme.id, { label: label, color: color, cats: cats });
+    else Store.addTheme(label, color, cats);
+    fermerEditeurTheme();
+    renderVoyage();
+    majEtatVoyage();
+    say(editingTheme ? "Thème modifié" : 'Thème « ' + label + ' » créé');
+  });
+
+  $("themeform-del").addEventListener("click", function () {
+    if (!editingTheme) return;
+    if (!confirm('Supprimer le thème « ' + editingTheme.label + ' » ?\n\n' +
+                 'Tes événements et tes catégories ne bougent pas.')) return;
+    /* Si le thème supprimé est celui qu'on regardait, on lève le filtre :
+       sinon la frise resterait amputée sans qu'aucun thème l'explique. */
+    var ids = Timeline.themeIds();
+    if (ids && ids.slice().sort().join("|") === editingTheme.cats.slice().sort().join("|")) {
+      Timeline.setTheme(null);
+      Timeline.rebuild();
+    }
+    Store.removeTheme(editingTheme.id);
+    fermerEditeurTheme();
+    renderVoyage();
+    majEtatVoyage();
+    say("Thème supprimé");
+  });
+
+  $("themeform-cancel").addEventListener("click", fermerEditeurTheme);
+  themeModal.addEventListener("click", function (e) {
+    if (e.target === themeModal) fermerEditeurTheme();
+  });
+
   /* ---------- barre du haut ---------- */
 
   $("btn-add").addEventListener("click", function () { openForm(null); });
@@ -1382,7 +1702,9 @@
       return;
     }
     if (e.key === "Escape") {
-      if (!catZoom.classList.contains("hidden")) closeCatZoom();
+      if (!themeModal.classList.contains("hidden")) fermerEditeurTheme();
+      else if (!voyage.classList.contains("hidden")) fermerVoyage();
+      else if (!catZoom.classList.contains("hidden")) closeCatZoom();
       else if (!viewModal.classList.contains("hidden")) closeView();
       else if (!chooseModal.classList.contains("hidden")) closeChoose();
       else if (!readModal.classList.contains("hidden")) closeRead();
@@ -1415,4 +1737,7 @@
       say("Colonne " + (lane + 1));
     }
   });
+  /* Un thème resté ouvert d'une session à l'autre doit se rappeler à nous
+     dès l'ouverture : sinon la frise s'affiche amputée sans explication. */
+  majEtatVoyage();
 })();
