@@ -1,6 +1,6 @@
 /* Kronos — interface : panneau, formulaire, recherche, import/export */
 (function () {
-  var VERSION = "6.3";
+  var VERSION = "6.4";
   var $ = function (id) { return document.getElementById(id); };
 
   var panel = $("panel"), panelBody = $("panel-body");
@@ -361,9 +361,35 @@
       var reader = new FileReader();
       reader.onload = function () {
         try {
-          var mode = confirm("OK = remplacer toute la frise\nAnnuler = ajouter aux événements existants")
-            ? "replace" : "merge";
-          var res = Store.importJSON(String(reader.result), mode);
+          var texte = String(reader.result);
+          var mode;
+          if (Store.estUnTheme(texte)) {
+            /* Un fichier de thème s'ajoute, toujours : ses événements ne sont
+               qu'un sujet, pas une frise. La question ne se pose donc pas. */
+            mode = "merge";
+          } else {
+            /* La question se pose pour une sauvegarde complète — et elle
+               engage tout le travail accumulé. On dit ce qui sera détruit,
+               et on met le remplacement du côté d'« Annuler », pour que le
+               réflexe « OK » soit le geste inoffensif. */
+            var n = Store.all().length;
+            mode = confirm(
+              "Ajouter le contenu de ce fichier à ta frise ?\n\n" +
+              "OK = ajouter (rien n'est perdu, les doublons sont ignorés)\n" +
+              "Annuler = choisir plutôt de tout remplacer"
+            ) ? "merge" : "remplacer?";
+            if (mode === "remplacer?") {
+              mode = confirm(
+                "REMPLACER TOUTE LA FRISE ?\n\n" +
+                "Tes " + n + " événements actuels seront définitivement " +
+                "supprimés et remplacés par ceux du fichier.\n\n" +
+                "Cette action est irréversible. Exporte d'abord si tu as un doute.\n\n" +
+                "OK = supprimer et remplacer\nAnnuler = ne rien faire"
+              ) ? "replace" : null;
+              if (!mode) { say("Import annulé"); return; }
+            }
+          }
+          var res = Store.importJSON(texte, mode);
           Timeline.rebuild(); Timeline.fitAll(); closePanel();
 
           /* Ce que le fichier a réellement apporté, thèmes compris, et ce

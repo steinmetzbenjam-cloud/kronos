@@ -204,6 +204,10 @@ Le destinataire l'ouvre par **Menu ☰ → Importer**, en choisissant *Ajouter a
 événements existants*. Il reçoit alors le thème, les catégories qui lui
 manquaient, et les événements qu'il n'avait pas.
 
+Un fichier de thème **s'ajoute toujours** : il ne peut pas remplacer une frise,
+et la question n'est même pas posée. Ses événements ne sont qu'un sujet, pas
+une collection complète — « remplacer » y détruirait tout le reste.
+
 **Aucun doublon** : un événement de même titre et de même année de début est
 reconnu comme déjà présent et ignoré. Le même fichier peut donc être importé
 deux fois sans rien dupliquer, et deux thèmes partageant des événements

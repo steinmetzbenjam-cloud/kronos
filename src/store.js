@@ -513,8 +513,17 @@ var Store = (function () {
       }, null, 2);
     },
 
+    /* Un fichier de thème sert à recevoir un sujet, jamais à remplacer une
+       frise : ses événements sont un sous-ensemble, et « remplacer » y
+       détruirait tout le reste. Le mode est donc forcé, quoi qu'ait
+       répondu l'appelant. */
+    estUnTheme: function (text) {
+      try { return JSON.parse(text).format === "kronos-theme-v1"; }
+      catch (err) { return false; }
+    },
     importJSON: function (text, mode) {
       var parsed = JSON.parse(text);
+      if (parsed.format === "kronos-theme-v1") mode = "merge";
       var incoming = (parsed.events || []).map(normalize);
       var themesEntrants = (parsed.themes || []).map(normalizeTheme);
       /* Un fichier de thèmes seuls est légitime : c'est ainsi qu'on se passe
