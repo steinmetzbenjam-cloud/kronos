@@ -1,7 +1,7 @@
 /* Kronos — stockage local des événements (localStorage) */
 var Store = (function () {
   var KEY = "kronos.data.v1";
-  var SEED_VERSION = 4;   /* à incrémenter quand seed.js gagne des entrées */
+  var SEED_VERSION = 5;   /* à incrémenter quand seed.js gagne des entrées */
   /* `themes` : les grands thèmes du Voyage. Chacun retient une sélection de
      catégories et de sous-catégories ; l'ouvrir n'affiche que celles-là. */
   var state = { events: [], categories: [], themes: [], seedVersion: 0 };
@@ -136,7 +136,7 @@ var Store = (function () {
     return {
       categories: window.KRONOS_SEED.categories.slice(),
       events: window.KRONOS_SEED.events.map(normalize),
-      themes: [],
+      themes: (window.KRONOS_SEED.themes || []).map(normalizeTheme),
       seedVersion: SEED_VERSION
     };
   }
@@ -165,6 +165,23 @@ var Store = (function () {
     return touches;
   }
 
+  /* Les thèmes livrés avec seed.js. Comme pour un thème reçu en fichier, un
+     libellé déjà présent n'est pas réécrit : le thème retouché sur l'appareil
+     l'emporte. Une catégorie que la frise ne connaît pas est écartée, sinon le
+     thème s'ouvrirait sur du vide. */
+  function mergeNewThemes() {
+    var connus = {};
+    state.themes.forEach(function (t) { connus[t.label.toLowerCase()] = true; });
+    (window.KRONOS_SEED.themes || []).forEach(function (raw) {
+      var t = normalizeTheme(raw);
+      if (connus[t.label.toLowerCase()]) return;
+      t.cats = t.cats.filter(hasCat);
+      if (!t.cats.length) return;
+      state.themes.push(t);
+      connus[t.label.toLowerCase()] = true;
+    });
+  }
+
   /* Ajoute les nouveautés de seed.js sans toucher aux ajouts personnels. */
   function mergeNewSeed() {
     if (state.seedVersion < 4) applyRemap();
@@ -191,6 +208,7 @@ var Store = (function () {
     window.KRONOS_SEED.categories.forEach(function (c) {
       if (!haveCat[c.id]) state.categories.push(c);
     });
+    mergeNewThemes();
     state.seedVersion = SEED_VERSION;
     save();
     return addedEvents;
