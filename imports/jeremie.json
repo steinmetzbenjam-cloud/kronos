@@ -1,0 +1,323 @@
+{
+  "format": "kronos-v1",
+  "exported": "2026-08-29T14:06:29Z",
+  "note": "Jérémie : dates rassemblées d'après la chronologie publiée par les Témoins de Jéhovah. À importer en mode « Ajouter ».",
+  "events": [
+    {
+      "t": "Ministère de Jérémie",
+      "s": -647,
+      "e": -580,
+      "c": "bible",
+      "d": "Soixante-sept ans, de son appel à l'achèvement de son livre en Égypte.\nLieu : Juda, puis Égypte\nRéférences : Jr 1:1-3 ; 43:6-7\nDate : 647-580 av. n. è. — chronologie publiée"
+    },
+    {
+      "t": "Jérémie avertit Jérusalem pendant 40 ans",
+      "s": -647,
+      "e": -607,
+      "c": "bible",
+      "d": "De la 13e année de Josias à la destruction de la ville.\nLieu : Jérusalem et Juda\nRéférences : Jr 1:2-3 ; 25:3\nDate : 647-607 av. n. è. — chronologie publiée"
+    },
+    {
+      "t": "Appel de Jérémie, la 13e année de Josias",
+      "s": -647,
+      "e": null,
+      "c": "bible",
+      "d": "« Avant de te former dans le ventre de ta mère, je te connaissais. » Il se dit trop jeune ; Jéhovah touche sa bouche.\nLieu : Anathoth, en Benjamin\nRéférences : Jr 1:1-10\nDate : 647 av. n. è. — chronologie publiée (13e année de Josias, 659-628)"
+    },
+    {
+      "t": "Visions de l'amandier et de la marmite qui bout",
+      "s": -647,
+      "e": null,
+      "c": "bible",
+      "d": "Le malheur viendra du nord.\nLieu : Anathoth\nRéférences : Jr 1:11-19\nDate : 647 av. n. è., l'année de son appel"
+    },
+    {
+      "t": "Mort de Josias à Meguiddo ; Jérémie compose des chants funèbres",
+      "s": -628,
+      "e": null,
+      "c": "bible",
+      "d": "Lieu : Meguiddo ; Jérusalem\nRéférences : 2Ch 35:20-25 ; Jr 22:10\nDate : 628 av. n. è. — fin du règne de Josias"
+    },
+    {
+      "t": "Yehoahaz emmené en Égypte après trois mois de règne",
+      "s": -628,
+      "e": null,
+      "c": "bible",
+      "d": "« Ne pleurez pas le mort ; pleurez celui qui s'en va » : il ne reverra pas son pays.\nLieu : Jérusalem ; Ribla ; Égypte\nRéférences : 2R 23:31-34 ; Jr 22:10-12\nDate : 628 av. n. è. — datée par la Bible"
+    },
+    {
+      "t": "Discours du Temple : « Ce lieu deviendra comme Shilo »",
+      "s": -628,
+      "e": null,
+      "c": "bible",
+      "d": "Prêtres et prophètes réclament sa mort ; les princes l'acquittent. Le prophète Ouriya, lui, est exécuté.\nLieu : Cour du Temple, Jérusalem\nRéférences : Jr 26:1-24\nDate : 628 av. n. è. — au début du règne de Yehoïaqim (Jr 26:1)"
+    },
+    {
+      "t": "Carkemish : Neboukadnetsar écrase Pharaon Neko",
+      "s": -625,
+      "e": null,
+      "c": "bible",
+      "d": "La puissance égyptienne recule ; Babylone devient la puissance dominante.\nLieu : Carkemish, sur l'Euphrate\nRéférences : Jr 46:1-12 ; 2R 24:7\nDate : 625 av. n. è. — 4e année de Yehoïaqim, 1re de Neboukadnetsar (Jr 25:1 ; 46:2)"
+    },
+    {
+      "t": "Les 70 ans de service à Babylone annoncés",
+      "s": -625,
+      "e": null,
+      "c": "bible",
+      "d": "« Ces nations devront servir le roi de Babylone soixante-dix ans. »\nLieu : Jérusalem\nRéférences : Jr 25:1-14\nDate : 625 av. n. è. — 4e année de Yehoïaqim (Jr 25:1)"
+    },
+    {
+      "t": "Jérémie dicte le rouleau à Barouk",
+      "s": -625,
+      "e": null,
+      "c": "bible",
+      "d": "Vingt-trois ans de messages mis par écrit d'un coup.\nLieu : Jérusalem\nRéférences : Jr 36:1-8\nDate : 625 av. n. è. — 4e année de Yehoïaqim (Jr 36:1)"
+    },
+    {
+      "t": "Message personnel à Barouk : « Ne recherche pas de grandes choses »",
+      "s": -625,
+      "e": null,
+      "c": "bible",
+      "d": "Lieu : Jérusalem\nRéférences : Jr 45:1-5\nDate : 625 av. n. è. — 4e année de Yehoïaqim (Jr 45:1)"
+    },
+    {
+      "t": "Yehoïaqim brûle le rouleau au brasero ; Barouk le récrit",
+      "s": -624,
+      "e": null,
+      "c": "bible",
+      "d": "Le roi découpe les colonnes au canif à mesure qu'on les lit. Un second rouleau reprend tout, augmenté.\nLieu : Maison d'hiver du roi, Jérusalem\nRéférences : Jr 36:9-32\nDate : 624 av. n. è. — 5e année de Yehoïaqim, 9e mois (Jr 36:9)"
+    },
+    {
+      "t": "Les Rékabites refusent le vin",
+      "s": -620,
+      "e": null,
+      "c": "bible",
+      "d": "Leur obéissance à un ancêtre humain fait honte à l'infidélité de Juda.\nLieu : Salle du Temple, Jérusalem\nRéférences : Jr 35:1-19\nDate : « aux jours de Yehoïaqim » (Jr 35:1) — année non précisée",
+      "as": 1
+    },
+    {
+      "t": "La ceinture de lin cachée près de l'Euphrate",
+      "s": -620,
+      "e": null,
+      "c": "bible",
+      "d": "Lieu : Jérusalem ; Perath\nRéférences : Jr 13:1-11\nDate : non datée — sous le règne de Yehoïaqim",
+      "as": 1
+    },
+    {
+      "t": "Chez le potier, puis la jarre brisée à Topheth",
+      "s": -620,
+      "e": null,
+      "c": "bible",
+      "d": "« Ainsi je briserai ce peuple et cette ville. »\nLieu : Maison du potier ; vallée de Hinnom\nRéférences : Jr 18:1–19:15\nDate : non datée — sous le règne de Yehoïaqim",
+      "as": 1
+    },
+    {
+      "t": "Pashhour met Jérémie aux ceps",
+      "s": -620,
+      "e": null,
+      "c": "bible",
+      "d": "Le prophète le renomme « Terreur de tous côtés ». Puis vient sa plainte : « Tu m'as trompé, ô Jéhovah. »\nLieu : Porte de Benjamin, Temple\nRéférences : Jr 20:1-18\nDate : non datée — sous le règne de Yehoïaqim",
+      "as": 1
+    },
+    {
+      "t": "Mort de Yehoïaqim : « enterré comme on enterre un âne »",
+      "s": -618,
+      "e": null,
+      "c": "bible",
+      "d": "Lieu : Jérusalem\nRéférences : Jr 22:18-19 ; 36:30 ; 2R 24:5-6\nDate : 618 av. n. è. — chronologie publiée"
+    },
+    {
+      "t": "Yehoïakîn se rend ; le roi, les artisans et les trésors partent pour Babylone",
+      "s": -617,
+      "e": null,
+      "c": "bible",
+      "d": "Trois mois et dix jours de règne. Ézékiel est du convoi ; Tsidqiya est établi roi à sa place.\nLieu : Jérusalem ; Babylone\nRéférences : 2R 24:10-17 ; Jr 22:24-30 ; 24:1\nDate : 617 av. n. è. — chronologie publiée"
+    },
+    {
+      "t": "Vision des deux paniers de figues",
+      "s": -617,
+      "e": null,
+      "c": "bible",
+      "d": "Les bonnes figues : les exilés. Les mauvaises : ceux qui restent avec Tsidqiya.\nLieu : Devant le Temple, Jérusalem\nRéférences : Jr 24:1-10\nDate : 617 av. n. è. — après la déportation de Yehoïakîn (Jr 24:1)"
+    },
+    {
+      "t": "Prophétie contre Élam",
+      "s": -617,
+      "e": null,
+      "c": "bible",
+      "d": "Lieu : Jérusalem\nRéférences : Jr 49:34-39\nDate : 617 av. n. è. — au début du règne de Tsidqiya (Jr 49:34)"
+    },
+    {
+      "t": "Lettre aux exilés : « Bâtissez des maisons, plantez des jardins »",
+      "s": -616,
+      "e": null,
+      "c": "bible",
+      "d": "Ils resteront soixante-dix ans ; qu'ils cherchent la paix de la ville où ils sont.\nLieu : Jérusalem → Babylone\nRéférences : Jr 29:1-14\nDate : peu après la déportation de 617 — année non précisée",
+      "as": 1
+    },
+    {
+      "t": "Le joug de bois porté devant les ambassadeurs",
+      "s": -613,
+      "e": null,
+      "c": "bible",
+      "d": "Édom, Moab, Ammon, Tyr et Sidon sont invités à se soumettre à Babylone.\nLieu : Jérusalem\nRéférences : Jr 27:1-11\nDate : 613 av. n. è. — 4e année de Tsidqiya (Jr 28:1)"
+    },
+    {
+      "t": "Hanania brise le joug et meurt la même année",
+      "s": -613,
+      "e": null,
+      "c": "bible",
+      "d": "Il annonçait le retour de l'arche et du roi sous deux ans ; Jérémie lui répond par un joug de fer.\nLieu : Temple, Jérusalem\nRéférences : Jr 28:1-17\nDate : 613 av. n. è. — 4e année de Tsidqiya, 5e mois (Jr 28:1)"
+    },
+    {
+      "t": "Seraya emporte à Babylone le rouleau contre Babylone",
+      "s": -613,
+      "e": null,
+      "c": "bible",
+      "d": "Lu là-bas, le rouleau est jeté dans l'Euphrate avec une pierre : « Ainsi Babylone sombrera. »\nLieu : Babylone\nRéférences : Jr 51:59-64\nDate : 613 av. n. è. — 4e année de Tsidqiya (Jr 51:59)"
+    },
+    {
+      "t": "Début du siège de Jérusalem : 10 tébeth",
+      "s": -609,
+      "e": null,
+      "c": "bible",
+      "d": "Neboukadnetsar revient après la révolte de Tsidqiya. Le siège durera dix-huit mois.\nLieu : Jérusalem\nRéférences : Jr 39:1 ; 52:4 ; 2R 25:1\nDate : 609 av. n. è. — 9e année de Tsidqiya, 10e mois, 10e jour (tébeth ≈ décembre-janvier)",
+      "sm": 1
+    },
+    {
+      "t": "« Le chemin de la vie et le chemin de la mort »",
+      "s": -609,
+      "e": null,
+      "c": "bible",
+      "d": "Tsidqiya consulte Jérémie : la ville sera livrée ; qui sortira vivra.\nLieu : Jérusalem\nRéférences : Jr 21:1-10\nDate : 609 av. n. è. — au début du siège",
+      "sm": 2
+    },
+    {
+      "t": "Le siège levé à l'approche de l'armée de Pharaon",
+      "s": -608,
+      "e": null,
+      "c": "bible",
+      "d": "Répit trompeur : « Les Chaldéens reviendront. »\nLieu : Jérusalem\nRéférences : Jr 37:1-10\nDate : 608 av. n. è. — pendant le siège",
+      "sm": 4
+    },
+    {
+      "t": "Jérémie achète le champ d'Anathoth pendant le siège",
+      "s": -608,
+      "e": null,
+      "c": "bible",
+      "d": "Acte de vente scellé et mis dans une jarre : « On achètera encore des champs dans ce pays. »\nLieu : Anathoth ; cour de la garde, Jérusalem\nRéférences : Jr 32:1-15\nDate : 608 av. n. è. — 10e année de Tsidqiya, 18e de Neboukadnetsar (Jr 32:1)",
+      "sm": 5
+    },
+    {
+      "t": "Les esclaves libérés, puis repris",
+      "s": -608,
+      "e": null,
+      "c": "bible",
+      "d": "L'affranchissement promis est annulé dès que le siège se relâche.\nLieu : Jérusalem\nRéférences : Jr 34:8-22\nDate : 608 av. n. è. — pendant le siège",
+      "sm": 5
+    },
+    {
+      "t": "Jérémie arrêté à la porte de Benjamin",
+      "s": -608,
+      "e": null,
+      "c": "bible",
+      "d": "Accusé de passer aux Chaldéens alors qu'il allait à Anathoth.\nLieu : Porte de Benjamin, Jérusalem\nRéférences : Jr 37:11-16\nDate : 608 av. n. è. — pendant le siège",
+      "sm": 6
+    },
+    {
+      "t": "La citerne de boue ; Ébed-Mélek remonte Jérémie",
+      "s": -608,
+      "e": null,
+      "c": "bible",
+      "d": "Trente hommes, des cordes et de vieux chiffons sous les aisselles.\nLieu : Cour de la garde, Jérusalem\nRéférences : Jr 38:1-13\nDate : 608 av. n. è. — pendant le siège",
+      "sm": 7
+    },
+    {
+      "t": "Promesse à Ébed-Mélek : « Tu auras ta vie pour butin »",
+      "s": -608,
+      "e": null,
+      "c": "bible",
+      "d": "Lieu : Cour de la garde, Jérusalem\nRéférences : Jr 39:15-18\nDate : 608 av. n. è. — avant la chute",
+      "sm": 8
+    },
+    {
+      "t": "La brèche dans la muraille : 9 tammouz",
+      "s": -607,
+      "e": null,
+      "c": "bible",
+      "d": "Onzième année de Tsidqiya ; la famine avait vidé la ville.\nLieu : Jérusalem\nRéférences : Jr 39:2 ; 52:6-7 ; 2R 25:2-4\nDate : 607 av. n. è. — 11e année, 4e mois, 9e jour (tammouz ≈ juin-juillet)",
+      "sm": 7
+    },
+    {
+      "t": "Tsidqiya capturé près de Jéricho, aveuglé",
+      "s": -607,
+      "e": null,
+      "c": "bible",
+      "d": "Ses fils égorgés sous ses yeux à Ribla : c'est la dernière chose qu'il voit.\nLieu : Plaines de Jéricho ; Ribla\nRéférences : Jr 39:4-7 ; 52:8-11\nDate : 607 av. n. è. — quelques jours après la brèche",
+      "sm": 7
+    },
+    {
+      "t": "Le Temple et la ville brûlés : 10 ab",
+      "s": -607,
+      "e": null,
+      "c": "bible",
+      "d": "Nebouzaradân incendie le Temple, le palais et toutes les maisons, et abat les murailles.\nLieu : Jérusalem\nRéférences : Jr 52:12-14 ; 2R 25:8-10\nDate : 607 av. n. è. — 5e mois, 10e jour (ab ≈ juillet-août) — chronologie publiée",
+      "sm": 8
+    },
+    {
+      "t": "Jérémie libéré de ses chaînes à Rama",
+      "s": -607,
+      "e": null,
+      "c": "bible",
+      "d": "Nebouzaradân lui laisse le choix : Babylone avec des égards, ou rester. Il reste.\nLieu : Rama ; Mitspa\nRéférences : Jr 39:11-14 ; 40:1-6\nDate : 607 av. n. è. — après l'incendie",
+      "sm": 8
+    },
+    {
+      "t": "Guedalia gouverneur à Mitspa, assassiné au 7e mois",
+      "s": -607,
+      "e": null,
+      "c": "bible",
+      "d": "Yishmaël le tue avec les Judéens et les Chaldéens présents ; le dernier reste de gouvernement juif disparaît.\nLieu : Mitspa\nRéférences : Jr 40:7–41:3 ; 2R 25:22-25\nDate : 607 av. n. è. — 7e mois (tishri ≈ septembre-octobre)",
+      "sm": 10
+    },
+    {
+      "t": "Le reste s'enfuit en Égypte et emmène Jérémie",
+      "s": -607,
+      "e": null,
+      "c": "bible",
+      "d": "Ils avaient juré d'obéir, puis sont partis quand même. Halte à Kimham, près de Bethléem.\nLieu : Kimham, près de Bethléem ; Tahpanhès\nRéférences : Jr 41:16–43:7\nDate : 607 av. n. è. — après le meurtre de Guedalia ; début des 70 ans de désolation",
+      "sm": 11
+    },
+    {
+      "t": "Les pierres cachées à Tahpanhès",
+      "s": -607,
+      "e": null,
+      "c": "bible",
+      "d": "Neboukadnetsar dressera son trône au-dessus : l'Égypte n'est pas un abri.\nLieu : Tahpanhès, en Égypte\nRéférences : Jr 43:8-13\nDate : 607 av. n. è. — peu après l'arrivée en Égypte",
+      "sm": 12
+    },
+    {
+      "t": "Contre le culte de la « reine des cieux » en Égypte",
+      "s": -606,
+      "e": null,
+      "c": "bible",
+      "d": "Dernier message connu de Jérémie aux Juifs d'Égypte.\nLieu : Migdol, Tahpanhès, Noph, Pathros\nRéférences : Jr 44:1-30\nDate : peu après 607 — année non précisée",
+      "as": 1
+    },
+    {
+      "t": "L'Égypte envahie : la prophétie de Tahpanhès s'accomplit",
+      "s": -588,
+      "e": null,
+      "c": "bible",
+      "d": "Lieu : Égypte\nRéférences : Jr 43:10-13 ; 46:13-26 ; Éz 29:17-20\nDate : 588 av. n. è. — 37e année de Neboukadnetsar",
+      "as": 1
+    },
+    {
+      "t": "Achèvement du livre de Jérémie",
+      "s": -580,
+      "e": null,
+      "c": "bible",
+      "d": "Le chapitre 52, en appendice, rappelle la chute de Jérusalem et la libération de Yehoïakîn en 580.\nLieu : Égypte\nRéférences : Jr 52:31-34\nDate : 580 av. n. è. — chronologie publiée"
+    }
+  ]
+}
